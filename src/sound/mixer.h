@@ -2,7 +2,6 @@
 #define MIXER_H
 
 #define MIXER_MAX_CHANNELS 16
-#define USE_VOLUME_AUTO_ADJUST
 
 /*
   When you allocate a channel, you pass a default mixing level setting.
@@ -70,11 +69,6 @@
 #define MIXER_GET_PAN(mixing_level)    (((mixing_level) >> 8) & 0x03)
 #define MIXER_GET_GAIN(mixing_level)   (((mixing_level) >> 10) & 0x03)
 
-#ifdef USE_VOLUME_AUTO_ADJUST
-#define VOLUME_MULTIPLIER_MAGIC		(0x0784dbd8)
-#define DEFAULT_VOLUME_MULTIPLIER	(10 << 8)
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
 int mixer_sh_start(void);
 void mixer_sh_stop(void);
 void mixer_sh_update(void);
@@ -115,9 +109,6 @@ struct mixer_config
 {
 	UINT8 default_levels[MIXER_MAX_CHANNELS];
 	UINT8 mixing_levels[MIXER_MAX_CHANNELS];
-#ifdef USE_VOLUME_AUTO_ADJUST
-	INT32 volume_multiplier;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 };
 
 void mixer_load_config(const struct mixer_config *config);

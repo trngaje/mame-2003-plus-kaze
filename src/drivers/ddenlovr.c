@@ -146,8 +146,6 @@ static int dynax_scroll[8*2];
 static int dynax_priority,dynax_priority2,dynax_bgcolor,dynax_bgcolor2;
 static int dynax_layer_enable=0x0f, dynax_layer_enable2=0x0f;
 static int dynax_palette_base[8];
-static int dynax_palette_mask[8];
-static int dynax_transparency_pen[8], dynax_transparency_mask[8];
 
 
 static void do_plot(int x,int y,int pen)
@@ -844,23 +842,6 @@ static WRITE16_HANDLER( ddenlovr_palette_base_w )
 		dynax_palette_base[offset] = data & 0xff;
 }
 
-static WRITE16_HANDLER( ddenlovr_palette_mask_w )
-{
-	if (ACCESSING_LSB)
-		dynax_palette_mask[offset] = data & 0xff;
-}
-
-static WRITE16_HANDLER( ddenlovr_transparency_pen_w )
-{
-	if (ACCESSING_LSB)
-		dynax_transparency_pen[offset] = data & 0xff;
-}
-
-static WRITE16_HANDLER( ddenlovr_transparency_mask_w )
-{
-	if (ACCESSING_LSB)
-		dynax_transparency_mask[offset] = data & 0xff;
-}
 
 static WRITE_HANDLER( quizchq_oki_bank_w )
 {
@@ -1051,8 +1032,8 @@ MEMORY_END
 
 static MEMORY_READ16_START( ddenlovr_readmem )
 	{ 0x000000, 0x07ffff, MRA16_ROM					},	/* ROM*/
-	{ 0xe00070, 0xe00071, unk16_r		},	/* ? must be 78 on startup (not necessary in ddlover)*/
 	{ 0xe00086, 0xe00087, ddenlovr_gfxrom_r			},	/* Video Chip*/
+	{ 0xe00070, 0xe00071, unk16_r		},	/* ? must be 78 on startup (not necessary in ddlover)*/
 	{ 0xe00100, 0xe00101, input_port_0_word_r		},	/* P1?*/
 	{ 0xe00102, 0xe00103, input_port_1_word_r		},	/* P2?*/
 	{ 0xe00104, 0xe00105, ddenlovr_special_r		},	/* Coins + ?*/
@@ -1067,49 +1048,8 @@ static MEMORY_WRITE16_START( ddenlovr_writemem )
 	{ 0x000000, 0x07ffff, MWA16_ROM						},	/* ROM*/
 	{ 0x300000, 0x300001, ddenlovr_oki_bank_w			},
 	{ 0xd00000, 0xd003ff, ddenlovr_palette_w	},	/* Palette*/
+/*	{ 0xd01000, 0xd017ff, MWA16_RAM 					},	*/ /* ? B0 on startup, then 00*/
 	{ 0xe00040, 0xe00047, ddenlovr_palette_base_w },	/* palette base for the 4 layers*/
-	{ 0xe00048, 0xe0004f, ddenlovr_palette_mask_w },	/* palette base for the 4 layers*/
-	{ 0xe00050, 0xe00057, ddenlovr_transparency_pen_w },	/* palette base for the 4 layers*/
-	{ 0xe00058, 0xe0005f, ddenlovr_transparency_mask_w },	/* palette base for the 4 layers*/
-	{ 0xe00068, 0xe00069, ddenlovr_bgcolor_w },
-	{ 0xe0006a, 0xe0006b, ddenlovr_priority_w },
-	{ 0xe0006c, 0xe0006d, ddenlovr_layer_enable_w },
-	{ 0xe00080, 0xe00083, ddenlovr_blitter_w			},
-	{ 0xe00302, 0xe00303, ddenlovr_blitter_irq_ack_w	},	/* Blitter irq acknowledge*/
-	{ 0xe00308, 0xe00309, ddenlovr_coincounter_0_w		},	/* Coin Counters*/
-	{ 0xe0030c, 0xe0030d, ddenlovr_coincounter_1_w		},	/**/
-
-	{ 0xe00400, 0xe00401, YM2413_register_port_0_lsb_w	},	/* Sound*/
-	{ 0xe00402, 0xe00403, YM2413_data_port_0_lsb_w		},	/**/
-/*	{ 0xe00500, 0xe0051f, 					},	*/ /* 6242RTC*/
-/*	{ 0xe00302, 0xe00303, MWA16_NOP						},	*/ /* ?*/
-	{ 0xe00600, 0xe00601, AY8910_control_port_0_lsb_w	},
-	{ 0xe00602, 0xe00603, AY8910_write_port_0_lsb_w		},
-	{ 0xe00700, 0xe00701, OKIM6295_data_0_lsb_w 		},	/**/
-	{ 0xff0000, 0xffffff, MWA16_RAM						},	/* RAM*/
-MEMORY_END
-
-static MEMORY_READ16_START( ddenlovrb_readmem )
-	{ 0x000000, 0x07ffff, MRA16_ROM					},	/* ROM*/
-
-	{ 0xe00086, 0xe00087, ddenlovr_gfxrom_r			},	/* Video Chip*/
-	{ 0xe00070, 0xe00071, unk16_r		},	/* ? must be 78 on startup (not necessary in ddlover)*/
-	{ 0xe00100, 0xe00101, input_port_0_word_r		},	/* P1?*/
-	{ 0xe00102, 0xe00103, input_port_1_word_r		},	/* P2?*/
-	{ 0xe00104, 0xe00105, ddenlovr_special_r		},	/* Coins + ?*/
-	{ 0xe00200, 0xe00201, input_port_3_word_r		},	/* DSW*/
-	{ 0xe00500, 0xe0051f, rtc16_r 				},	/* 6242RTC*/
-	{ 0xe00604, 0xe00605, AY8910_read_port_0_lsb_r	},
-	{ 0xe00700, 0xe00701, OKIM6295_status_0_lsb_r	},	/* Sound*/
-	{ 0xff0000, 0xffffff, MRA16_RAM					},	/* RAM*/
-MEMORY_END
-
-static MEMORY_WRITE16_START( ddenlovrb_writemem )
-	{ 0x000000, 0x07ffff, MWA16_ROM						},	/* ROM*/
-	{ 0x300000, 0x300001, ddenlovr_oki_bank_w			},
-	{ 0xd00000, 0xd003ff, ddenlovr_palette_w	},	/* Palette*/
-	{ 0xe00040, 0xe00047, ddenlovr_palette_base_w },	/* palette base for the 4 layers*/
-
 /*	{ 0xe00048, 0xe0004f, 			},	*/ /* layer related? palette bank? see notes at beginning of driver*/
 	{ 0xe00068, 0xe00069, ddenlovr_bgcolor_w },
 	{ 0xe0006a, 0xe0006b, ddenlovr_priority_w },
@@ -1127,6 +1067,7 @@ static MEMORY_WRITE16_START( ddenlovrb_writemem )
 	{ 0xe00700, 0xe00701, OKIM6295_data_0_lsb_w 		},	/**/
 	{ 0xff0000, 0xffffff, MWA16_RAM						},	/* RAM*/
 MEMORY_END
+
 
 static READ16_HANDLER( nettoqc_special_r )
 {
@@ -2102,31 +2043,6 @@ static MACHINE_DRIVER_START( ddenlovr )
 	MDRV_SOUND_ADD(OKIM6295, okim6295_interface)
 MACHINE_DRIVER_END
 
-static MACHINE_DRIVER_START( ddenlovrb )
-
-	/* basic machine hardware */
-	MDRV_CPU_ADD_TAG("main",M68000,24000000 / 2)
-	MDRV_CPU_MEMORY(ddenlovrb_readmem,ddenlovrb_writemem)
-	MDRV_CPU_VBLANK_INT(irq1_line_hold,1)
-
-	MDRV_FRAMES_PER_SECOND(60)
-	MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
-
-	/* video hardware */
-	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-	MDRV_SCREEN_SIZE(336, 256)
-	MDRV_VISIBLE_AREA(0, 336-1, 5, 256-16+5-1)
-	MDRV_PALETTE_LENGTH(0x100)
-
-	MDRV_VIDEO_START(ddenlovr)
-	MDRV_VIDEO_UPDATE(ddenlovr)
-
-	/* sound hardware */
-	MDRV_SOUND_ADD(YM2413, ym2413_interface)
-	MDRV_SOUND_ADD(AY8910, ay8910_interface)
-	MDRV_SOUND_ADD(OKIM6295, okim6295_interface)
-MACHINE_DRIVER_END
-
 static MACHINE_DRIVER_START( quiz365 )
 
 	/* basic machine hardware */
@@ -2510,21 +2426,7 @@ ROM_START( ddenlovr )
 	ROM_LOAD( "1132h.1e", 0x100000, 0x080000, CRC(2de6363d) SHA1(2000328e41bc0261f19e02323434e9dfdc61013a) )	/* bank 4, 5*/
 ROM_END
 
-ROM_START( ddenlovrb )
-	ROM_REGION( 0x080000, REGION_CPU1, 0 )        /* 68000 Code */
-	ROM_LOAD16_BYTE( "rom2", 0x000000, 0x040000, CRC(cabdf78f) SHA1(789d4754c7b84964ee317b8a618f26a417f50bcc) )
-	ROM_LOAD16_BYTE( "rom3", 0x000001, 0x040000, CRC(36f8d05e) SHA1(78f75175541ebf377f5375ea30d80ea91f380971) )
 
-	ROM_REGION( 0x480000, REGION_GFX1, 0 )    /* blitter data */
-	ROM_LOAD( "rom4", 0x000000, 0x080000, CRC(ee143d8e) SHA1(61a36c64d450209071e996b418adf416dfa68fd9) )
-	ROM_LOAD( "rom5", 0x080000, 0x080000, CRC(58a662be) SHA1(3e2fc167bdee74ebfa63c3b1b0d822e3d898c30c) )
-	ROM_LOAD( "rom6", 0x100000, 0x080000, CRC(f96e0708) SHA1(e910970a4203b9b1943c853e3d869dd43cdfbc2d) )
-	ROM_LOAD( "rom7", 0x180000, 0x080000, CRC(b47e27ec) SHA1(5a36e68eb7c868ce8ca9d11bd9bcaa7f101ee64f) )
-	ROM_LOAD( "rom8", 0x200000, 0x080000, CRC(7c7beef6) SHA1(f8631aaec7cc01cc6478f3fc95fdac51c5b5d226) )
-
-	ROM_REGION( 0x200000, REGION_SOUND1, ROMREGION_SOUNDONLY )    /* Samples */
-	ROM_LOAD( "rom1", 0x000000, 0x080000, CRC(ba4723e8) SHA1(fd32b33bd43773fed083990b59a3994f4a631b04) )
-ROM_END
 /***************************************************************************
 
 HANAKANZASHI
@@ -2572,14 +2474,12 @@ static DRIVER_INIT( rongrong )
 }
 
 
-
-GAMEX(1992, mmpanic,  0,         mmpanic,  mmpanic,   0,        ROT0, "Nakanihon + East Technology (Taito license)", "Monkey Mole Panic (USA)",                    GAME_NO_COCKTAIL )
-GAMEX(1993, quizchq,  0,         quizchq,  quizchq,   0,        ROT0, "Nakanihon",                                   "Quiz Channel Question (Ver 1.00) (Japan)",   GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_IMPERFECT_SOUND )
-GAMEX(1993, quizchql, quizchq,   quizchq,  quizchq,   0,        ROT0, "Nakanihon (Laxan license)",                   "Quiz Channel Question (Ver 1.23) (Taiwan[Q])", GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_IMPERFECT_SOUND )
-GAMEX(1994, quiz365,  0,         quiz365,  quiz365,   0,        ROT0, "Nakanihon",                                   "Quiz 365 (Hong Kong and Taiwan)",              GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_NOT_WORKING )
-GAMEX(1994, rongrong, 0,         rongrong, rongrong,  rongrong, ROT0, "Nakanihon",                                   "Rong Rong (Germany)",                        GAME_NO_COCKTAIL )
-GAMEX(1995, nettoqc,  0,         nettoqc,  nettoqc,   0,        ROT0, "Nakanihon",                                   "Nettoh Quiz Champion (Japan)",               GAME_NO_COCKTAIL | GAME_IMPERFECT_COLORS )
-GAMEX(1996, ddenlovr, 0,         ddenlovr, ddenlovr,  0,        ROT0, "Dynax",                                       "Don Den Lover Vol. 1 (Hong Kong)",           GAME_NO_COCKTAIL | GAME_IMPERFECT_COLORS )
-GAMEX(1996, ddenlovrb, ddenlovr, ddenlovrb, ddenlovr,  0,    	ROT0, "bootleg",                                     "Don Den Lover Vol. 1 - Heukbaeg-euro Jeonghaja (Korea, bootleg)", GAME_NO_COCKTAIL  )
+GAMEX(1992, mmpanic,  0,       mmpanic,  mmpanic,  0,        ROT0, "Nakanihon + East Technology (Taito license)", "Monkey Mole Panic (USA)",                    GAME_NO_COCKTAIL )
+GAMEX(1993, quizchq,  0,       quizchq,  quizchq,  0,        ROT0, "Nakanihon",                                   "Quiz Channel Question (Ver 1.00) (Japan)",   GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_IMPERFECT_SOUND )
+GAMEX(1993, quizchql, quizchq, quizchq,  quizchq,  0,        ROT0, "Nakanihon (Laxan license)",                   "Quiz Channel Question (Ver 1.23) (Taiwan[Q])", GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_IMPERFECT_SOUND )
+GAMEX(1994, quiz365,  0,       quiz365,  quiz365,  0,        ROT0, "Nakanihon",                                   "Quiz 365 (Hong Kong and Taiwan)",              GAME_NO_COCKTAIL | GAME_IMPERFECT_GRAPHICS | GAME_NOT_WORKING )
+GAMEX(1994, rongrong, 0,       rongrong, rongrong, rongrong, ROT0, "Nakanihon",                                   "Rong Rong (Germany)",                        GAME_NO_COCKTAIL )
+GAMEX(1995, nettoqc,  0,       nettoqc,  nettoqc,  0,        ROT0, "Nakanihon",                                   "Nettoh Quiz Champion (Japan)",               GAME_NO_COCKTAIL | GAME_IMPERFECT_COLORS )
+GAMEX(1996, ddenlovr, 0,       ddenlovr, ddenlovr, 0,        ROT0, "Dynax",                                       "Don Den Lover Vol. 1 (Hong Kong)",           GAME_NO_COCKTAIL | GAME_IMPERFECT_COLORS )
 
 GAMEX(1996, hanakanz, 0,       rongrong, rongrong, 0,        ROT0, "Dynax",     "Hanakanzashi (Japan)", GAME_NOT_WORKING )

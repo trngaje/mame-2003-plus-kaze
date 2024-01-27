@@ -144,6 +144,7 @@ enum
 	UI_watchx,
 	UI_watchy,
 	UI_watch,
+
 	UI_hex,
 	UI_decimal,
 	UI_binary,

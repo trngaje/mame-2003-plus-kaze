@@ -385,6 +385,11 @@ is selected
 
 #define OSD_READKEY_KLUDGE	1
 
+#define NAME_MAX_LENGTH		255
+#define DESC_MAX_LENGTH		255
+#define STR_(X) #X
+#define STR(X) STR_(X)
+
 /**** Macros *****************************************************************/
 
 /*	easy bitfield extraction and setting */
@@ -1089,7 +1094,7 @@ static void		InitStringTable(void);
 static void		FreeStringTable(void);
 
 static INT32	UserSelectValueMenu(struct mame_bitmap * bitmap, int selection, CheatEntry * entry);
-static int		EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, int firstTime);
+int		EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, int firstTime);
 static int		EditCheatMenu(struct mame_bitmap * bitmap, CheatEntry * entry, int selection);
 static int		DoSearchMenuClassic(struct mame_bitmap * bitmap, int selection, int startNew);
 static int		DoSearchMenu(struct mame_bitmap * bitmap, int selection, int startNew);
@@ -2323,7 +2328,7 @@ static INT32 CommentMenu(struct mame_bitmap * bitmap, int selection, CheatEntry 
 	return sel + 1;
 }
 
-static int EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, int firstTime)
+int EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, int firstTime)
 {
 	INT32			sel;
 	static INT32	submenu_choice = 0;
@@ -7769,17 +7774,12 @@ static UINT8 DefaultEnableRegion(SearchRegion * region, SearchInfo * info)
 				(!region->writeHandler->base))
 				return 1;
 
-			{
-				extern struct GameDriver	driver_neogeo;
-
 				/* for neogeo, search bank one*/
-				if(	(Machine->gamedrv->clone_of == &driver_neogeo) &&
+				if(	(options.content_flags[CONTENT_NEOGEO]) &&
 					(info->targetType == kRegionType_CPU) &&
 					(info->targetIdx == 0) &&
 					(handler == MWA_BANK1))
 					return 1;
-			}
-
 
 #if HAS_TMS34010
 
@@ -8362,8 +8362,8 @@ static void LoadCheatDatabase()
 	foundCheatDatabase = 1;
 
 	/* make the format strings*/
-	sprintf(formatString, ":%s:%s", Machine->gamedrv->name, "%x:%x:%x:%x:%[^:\n\r]:%[^:\n\r]");
-	sprintf(oldFormatString, "%s:%s", Machine->gamedrv->name, "%d:%x:%x:%d:%[^:\n\r]:%[^:\n\r]");
+	sprintf(formatString, ":%s:%s", Machine->gamedrv->name, "%x:%x:%x:%x:%" STR(NAME_MAX_LENGTH) "[^:\n\r]:%" STR(DESC_MAX_LENGTH) "[^:\n\r]");
+	sprintf(oldFormatString, "%s:%s", Machine->gamedrv->name, "%d:%x:%x:%d:%" STR(NAME_MAX_LENGTH) "[^:\n\r]:%" STR(DESC_MAX_LENGTH) "[^:\n\r]");
 
 	while(intfstream_gets(in_file, buf, 2048))
 	{
@@ -8371,8 +8371,8 @@ static void LoadCheatDatabase()
 		int			address;
 		int			data;
 		int			extendData;
-		char		name[256];
-		char		description[256];
+		char		name[NAME_MAX_LENGTH+1];
+		char		description[DESC_MAX_LENGTH+1];
 
 		int			argumentsMatched;
 
@@ -8403,7 +8403,6 @@ static void LoadCheatDatabase()
 				type = ConvertOldCode(oldCode, oldCPU, &data, &extendData);
 			}
 		}
-
 
 		/*logerror("cheat: processing %s\n", buf);*/
 

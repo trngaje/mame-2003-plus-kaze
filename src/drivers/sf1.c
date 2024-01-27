@@ -54,7 +54,7 @@ static WRITE16_HANDLER( soundcmd_w )
 	if (ACCESSING_LSB)
 	{
 		if( ost_support_enabled(OST_SUPPORT_SF1) ) {
-			if(generate_ost_sound_sf1( data )) {
+			if(generate_ost_sound( data )) {
 				soundlatch_w(offset,data & 0xff);
 				cpu_set_irq_line(1,IRQ_LINE_NMI,PULSE_LINE);
 			}
@@ -864,9 +864,8 @@ static MACHINE_DRIVER_START( sf1 )
 	MDRV_SOUND_ADD(YM2151, ym2151_interface)
 	MDRV_SOUND_ADD(MSM5205, msm5205_interface)
 
-	// Lets add our SF1 music sample packs.
-	MDRV_SOUND_ADD_TAG("OST Samples", SAMPLES, ost_sf1)
-	init_ost_settings(OST_SUPPORT_SF1);
+	/* Lets add our SF1 music sample packs. */
+	MDRV_INSTALL_OST_SUPPORT(OST_SUPPORT_SF1)
 MACHINE_DRIVER_END
 
 

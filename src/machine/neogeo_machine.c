@@ -5,7 +5,6 @@
 #include "state.h"
 #include <time.h>
 
-#define NEOGEO_HACKS
 
 static int sram_locked;
 static offs_t sram_protection_hack;
@@ -17,9 +16,7 @@ extern int neogeo_rng;
 data16_t *neogeo_ram16;
 data16_t *neogeo_sram16;
 
-#ifdef NEOGEO_HACKS
-int Sysbios;
-#endif
+
 /***************** MEMCARD GLOBAL VARIABLES ******************/
 int mcd_action=0;
 int mcd_number=0;
@@ -39,7 +36,7 @@ static void neogeo_register_sub_savestate(void);
 /* This function is called on every reset */
 MACHINE_INIT( neogeo )
 {
-#ifdef NEOGEO_HACKS
+#if 0
 	data16_t src, res, *mem16= (data16_t *)memory_region(REGION_USER1);
 #endif
 	time_t ltime;
@@ -50,21 +47,15 @@ MACHINE_INIT( neogeo )
 	memset (neogeo_ram16, 0, 0x10000);
 
 
-#ifdef NEOGEO_HACKS // NEOGEO_HACKS
-if (Sysbios == 0) // EUROPE_1
-{
-#endif
-#if 1
+#if 0
 	/* Set up machine country */
 	src = readinputport(5);
 	res = src & 0x3;
 
 	/* Console/arcade mode */
-	if (src & 0x04) 
-		res |= 0x8000;
-// #ifndef CONSOLE
-// 	res |= 0x8000;
-// #endif
+#ifndef CONSOLE
+	res |= 0x8000;
+#endif
 
 	/* write the ID in the system BIOS ROM */
 	mem16[0x0200] = res;
@@ -77,53 +68,6 @@ if (Sysbios == 0) // EUROPE_1
 	else
 	{
 		mem16[0x11b1a/2] = 0x1b6a;
-	}
-#endif
-#ifdef NEOGEO_HACKS // NEOGEO_HACKS
-}
-
-	if (Sysbios == 7) // DEBUG
-	{
-		/* Set up machine country */
-		src = readinputport(5);
-		res = src & 0x3;
-
-		/* write the ID in the system BIOS ROM */
-		mem16[0x0200] = res;
-
-		if (memcard_manager==1)
-		{
-			memcard_manager=0;
-			mem16[0x11b1a/2] = 0x3cac;
-		}
-		else
-		{
-			mem16[0x1194c/2] = 0x1b6a;
-		}
-	}
-
-	if (neogeo_has_trackball)
-	{
-		/* Set up machine country */
-		src = readinputport(5);
-		res = src & 0x3;
-
-		/* Console/arcade mode */
-		if (src & 0x04) 
-			res |= 0x8000;
-
-		/* write the ID in the system BIOS ROM */
-		mem16[0x0200] = res;
-
-		if (memcard_manager==1)
-		{
-			memcard_manager=0;
-			mem16[0x10c44/2] = 0x4366;
-		}
-		else
-		{
-			mem16[0x10c44/2] = 0x0c94;
-		}
 	}
 #endif
 
@@ -164,10 +108,6 @@ DRIVER_INIT( neogeo )
 	extern struct YM2610interface neogeo_ym2610_interface;
 	data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
 	int tileno,numtiles;
-
-#ifdef NEOGEO_HACKS
-	Sysbios = determine_bios_rom(Machine->gamedrv->bios);
-#endif
 
 	numtiles = memory_region_length(REGION_GFX3)/128;
 	for (tileno = 0;tileno < numtiles;tileno++)
@@ -305,58 +245,9 @@ DRIVER_INIT( neogeo )
 
 	/* irritating maze uses a trackball */
 	if (!strcmp(Machine->gamedrv->name,"irrmaze"))
-#ifdef NEOGEO_HACKS
-	{
-		neogeo_has_trackball = 1;
-
-		/* TODO: check the memcard manager patch in neogeo_init_machine(), */
-		/* it probably has to be moved as well */
-		/* Remove memory check for now */
-		mem16[0x10c2a/2] = 0x4e71;
-		mem16[0x10c2c/2] = 0x4e71;
-		mem16[0x10c40/2] = 0x4ef9;
-		mem16[0x10c42/2] = 0x00c1;
-		mem16[0x10c44/2] = 0x0c94;
-
-		/* Patch bios rom, for Calendar errors */
-		mem16[0x10d3e/2] = 0x4e71;
-		mem16[0x10d40/2] = 0x4e71;
-		mem16[0x10d46/2] = 0x4e71;
-		mem16[0x10d48/2] = 0x4e71;
-
-		/* Rom internal checksum fails for now.. */
-		mem16[0x10d8c/2] = 0x4e71;
-		mem16[0x10d8e/2] = 0x4e71;
-	}
-	else
-	{
-		neogeo_has_trackball = 0;
-
-		if (Sysbios == 0) // Europe, 1 Slot
-		{
-			/* Remove memory check for now */
-			mem16[0x11b00/2] = 0x4e71;
-			mem16[0x11b02/2] = 0x4e71;
-			mem16[0x11b16/2] = 0x4ef9;
-			mem16[0x11b18/2] = 0x00c1;
-			mem16[0x11b1a/2] = 0x1b6a;
-
-			/* Patch bios rom, for Calendar errors */
-			mem16[0x11c14/2] = 0x4e71;
-			mem16[0x11c16/2] = 0x4e71;
-			mem16[0x11c1c/2] = 0x4e71;
-			mem16[0x11c1e/2] = 0x4e71;
-
-			/* Rom internal checksum fails for now.. */
-			mem16[0x11c62/2] = 0x4e71;
-			mem16[0x11c64/2] = 0x4e71;
-		}
-	}
-#else
 		neogeo_has_trackball = 1;
 	else
 		neogeo_has_trackball = 0;
-#endif
 
 
 	{ /* info from elsemi, this is how nebula works, is there a better way in mame? */
@@ -640,73 +531,9 @@ static READ16_HANDLER( prot_9a37_r )
 
 static void neogeo_custom_memory(void)
 {
-#ifdef NEOGEO_HACKS
-	sram_locked          = 0;
-	sram_protection_hack = 0;
-	prot_data            = 0;
-#endif
-
 	/* Individual games can go here... */
 
 	/* kludges */
-
-#ifdef NEOGEO_HACKS
-	if (!strcmp(Machine->gamedrv->name,"mslug3")  ||
-		!strcmp(Machine->gamedrv->name,"mslug3n") ||
-		!strcmp(Machine->gamedrv->name,"mslug3d") ||
-		!strcmp(Machine->gamedrv->name,"mslug3hek04") ||
-		!strcmp(Machine->gamedrv->name,"mslug3hpro") )
-	{
-		/* the game hangs after a while without this patch */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0x0288e >> 1] = 0x4e71;
-		mem16[0x02896 >> 1] = 0x4e71;
-	}
-
-	if (!strcmp(Machine->gamedrv->name,"kof2000") ||
-		!strcmp(Machine->gamedrv->name,"kof2000n") ||
-		!strcmp(Machine->gamedrv->name,"kof2000d") ||
-		!strcmp(Machine->gamedrv->name,"kof2knd"))
-	{
-		/* Patch out loop to disable console mode */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0xa226e >> 1] = 0x4e75;
-	}
-	
-	if (!strcmp(Machine->gamedrv->name,"mslug4") ||
-		!strcmp(Machine->gamedrv->name,"mslug4n") ||
-		!strcmp(Machine->gamedrv->name,"mslug4ek01") ||
-		!strcmp(Machine->gamedrv->name,"mslug4pro"))
-	{
-		/* Patch out loop to disable console mode */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0x0ae14/2] = 0x4e71;
-	}
-	if (!strcmp(Machine->gamedrv->name,"nitd") ||
-		!strcmp(Machine->gamedrv->name,"nitdd"))
-	{
-		/* Patch out loop to disable console mode */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0x19978 >> 1] = 0x4e75;
-	}
-
-	if (!strcmp(Machine->gamedrv->name,"sengoku3") ||
-    	!strcmp(Machine->gamedrv->name,"sengoku3e3") ||
-		!strcmp(Machine->gamedrv->name,"sengok3d"))
-	{
-		/* Patch out loop to disable console mode */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0x00d04/2] = 0x4e71;
-	}
-
-	if (!strcmp(Machine->gamedrv->name,"zupapa") ||
-		!strcmp(Machine->gamedrv->name,"zupapad"))
-	{
-		/* Patch out loop to disable console mode */
-		data16_t *mem16 = (data16_t *)memory_region(REGION_CPU1);
-		mem16[0x80290/2] = 0x4e71;
-	}
-#endif
 
 	if (!Machine->sample_rate &&
 			!strcmp(Machine->gamedrv->name,"popbounc"))
@@ -722,13 +549,7 @@ static void neogeo_custom_memory(void)
 		install_mem_read16_handler(0, 0x2fe446, 0x2fe447, prot_9a37_r);
 	}
 
-#ifdef NEOGEO_HACKS
-	if (!strcmp(Machine->gamedrv->name,"garou") ||
-		!strcmp(Machine->gamedrv->name,"garoud")||
-		   !strcmp(Machine->gamedrv->name,"garoun"))
-#else
 	if (!strcmp(Machine->gamedrv->name,"garou"))
-#endif
 	{
 		/* special ROM banking handler */
 		install_mem_write16_handler(0, 0x2fffc0, 0x2fffc1, garou_bankswitch_w);
@@ -764,7 +585,7 @@ static void neogeo_custom_memory(void)
 		install_mem_read16_handler(0, 0x2fe446, 0x2fe447, prot_9a37_r);
 	}
 
- 	/* hacks to make the games which do protection checks run in arcade mode */
+	/* hacks to make the games which do protection checks run in arcade mode */
 	/* we write protect a SRAM location so it cannot be set to 1 */
 	sram_protection_hack = ~0;
 	if (	!strcmp(Machine->gamedrv->name,"fatfury3") ||
@@ -776,31 +597,23 @@ static void neogeo_custom_memory(void)
 			!strcmp(Machine->gamedrv->name,"rbff1") ||
 			!strcmp(Machine->gamedrv->name,"rbffspec") ||
 			!strcmp(Machine->gamedrv->name,"kof95") ||
-			!strcmp(Machine->gamedrv->name,"kof95seh") ||
 			!strcmp(Machine->gamedrv->name,"kof96") ||
-			!strcmp(Machine->gamedrv->name,"kof96s20") ||
-			!strcmp(Machine->gamedrv->name,"kof96kt") ||
 			!strcmp(Machine->gamedrv->name,"kof96h") ||
 			!strcmp(Machine->gamedrv->name,"kof97") ||
-			!strcmp(Machine->gamedrv->name,"kof97kt") ||
 			!strcmp(Machine->gamedrv->name,"kof97a") ||
 			!strcmp(Machine->gamedrv->name,"kof97pls") ||
-			!strcmp(Machine->gamedrv->name,"kof97plskt") ||
 			!strcmp(Machine->gamedrv->name,"kog") ||
 			!strcmp(Machine->gamedrv->name,"kof98") ||
 			!strcmp(Machine->gamedrv->name,"kof98n") ||
 			!strcmp(Machine->gamedrv->name,"kof98k") ||
 			!strcmp(Machine->gamedrv->name,"kof98") ||
 			!strcmp(Machine->gamedrv->name,"kof98n") ||
-			!strcmp(Machine->gamedrv->name,"kof98hkt") ||
 			!strcmp(Machine->gamedrv->name,"kof99") ||
 			!strcmp(Machine->gamedrv->name,"kof99a") ||
 			!strcmp(Machine->gamedrv->name,"kof99e") ||
 			!strcmp(Machine->gamedrv->name,"kof99n") ||
 			!strcmp(Machine->gamedrv->name,"kof99p") ||
-			!strcmp(Machine->gamedrv->name,"kof99ndkt") ||
 			!strcmp(Machine->gamedrv->name,"kof2000") ||
-			!strcmp(Machine->gamedrv->name,"kof2kkt") ||
 			!strcmp(Machine->gamedrv->name,"kof2000n") ||
 			!strcmp(Machine->gamedrv->name,"kizuna") ||
 			!strcmp(Machine->gamedrv->name,"lastblad") ||
@@ -809,9 +622,7 @@ static void neogeo_custom_memory(void)
 			!strcmp(Machine->gamedrv->name,"rbff2") ||
 			!strcmp(Machine->gamedrv->name,"rbff2a") ||
 			!strcmp(Machine->gamedrv->name,"mslug2") ||
-			!strcmp(Machine->gamedrv->name,"mslug2pro") ||			
-      		!strcmp(Machine->gamedrv->name,"mslug2t") ||	  
-      		!strcmp(Machine->gamedrv->name,"mslug2tsp") ||	 
+      !strcmp(Machine->gamedrv->name,"mslug2t") ||
 			!strcmp(Machine->gamedrv->name,"mslug3") ||
 			!strcmp(Machine->gamedrv->name,"garou") ||
 			!strcmp(Machine->gamedrv->name,"garouo") ||
@@ -856,9 +667,7 @@ static void neogeo_custom_memory(void)
 		mem16[0x0000/2] = 0x0010;
 	}
 
-	if (!strcmp(Machine->gamedrv->name,"mslugx") ||
-		!strcmp(Machine->gamedrv->name,"mslugxsp2") ||
-		!strcmp(Machine->gamedrv->name,"mslugxpro") )
+	if (!strcmp(Machine->gamedrv->name,"mslugx"))
 	{
 		/* patch out protection checks */
 		int i;

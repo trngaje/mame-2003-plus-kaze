@@ -40,6 +40,12 @@ struct mame_bitmap
 	void (*plot_box)(struct mame_bitmap *bitmap,int x,int y,int width,int height,pen_t pen);
 };
 
+#define BITMAP_ADDR(bitmap, type, y, x)	\
+	((type *)(bitmap)->base + (y) * (bitmap)->rowpixels + (x))
+
+#define BITMAP_ADDR8(bitmap, y, x)	BITMAP_ADDR(bitmap, UINT8, y, x)
+#define BITMAP_ADDR16(bitmap, y, x)	BITMAP_ADDR(bitmap, UINT16, y, x)
+#define BITMAP_ADDR32(bitmap, y, x)	BITMAP_ADDR(bitmap, UINT32, y, x)
 
 struct RomModule
 {
@@ -97,7 +103,7 @@ struct GameSamples
 	struct GameSample *sample[1];	/* extendable */
 };
  
-#define	GAME_SAMPLE_LARGE		10000000 // 10MB
+#define	GAME_SAMPLE_LARGE		10000000 /* 10MB */
 
 /***************************************************************************
 
@@ -166,7 +172,6 @@ enum
 #define ROMENTRYTYPE_FILL			5					/* this entry fills an area with a constant value */
 #define ROMENTRYTYPE_COPY			6					/* this entry copies data from another region/offset */
 #define ROMENTRYTYPE_COUNT			7
-#define ROMENTRYTYPE_IGNORE			8			        /* this entry continues loading the previous ROM but throws the data away */
 
 #define ROMENTRY_REGION				((const char *)ROMENTRYTYPE_REGION)
 #define ROMENTRY_END				((const char *)ROMENTRYTYPE_END)
@@ -174,7 +179,6 @@ enum
 #define ROMENTRY_CONTINUE			((const char *)ROMENTRYTYPE_CONTINUE)
 #define ROMENTRY_FILL				((const char *)ROMENTRYTYPE_FILL)
 #define ROMENTRY_COPY				((const char *)ROMENTRYTYPE_COPY)
-#define ROMENTRY_IGNORE				((const char *)ROMENTRYTYPE_IGNORE)
 
 /* ----- per-entry macros ----- */
 #define ROMENTRY_GETTYPE(r)			((FPTR)(r)->_name)
@@ -339,8 +343,6 @@ enum
 #define ROM_FILL(offset,length,value)                ROM_LOAD(ROMENTRY_FILL, offset, length, (const char*)value)
 #define ROM_COPY(rgn,srcoffset,offset,length)        ROMX_LOAD(ROMENTRY_COPY, offset, length, (const char*)srcoffset, (rgn) << 24)
 
-#define ROM_IGNORE(length) 							 ROMX_LOAD(ROMENTRY_IGNORE | ROM_INHERITFLAGS,0,length,0,ROM_INHERITFLAGS)
-
 /* ----- nibble loading macros ----- */
 #define ROM_LOAD_NIB_HIGH(name,offset,length,hash)   ROMX_LOAD(name, offset, length, hash, ROM_NIBBLE | ROM_SHIFT_NIBBLE_HI)
 #define ROM_LOAD_NIB_LOW(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_NIBBLE | ROM_SHIFT_NIBBLE_LO)
@@ -356,10 +358,11 @@ enum
 #define ROM_LOAD32_WORD_SWAP(name,offset,length,hash)ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(2))
 #define ROM_LOAD32_DWORD(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_GROUPDWORD)
 
+/* ----- new-style 64-bit loading macros ----- */
 #define ROM_LOAD64_BYTE(name,offset,length,hash)        ROMX_LOAD(name, offset, length, hash, ROM_SKIP(7))
-#define ROM_LOAD64_WORD(name,offset,length,hash)        ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_SKIP(6))
-#define ROM_LOAD64_WORD_SWAP(name,offset,length,hash)   ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(6))
-#define ROM_LOAD64_DWORD_SWAP(name,offset,length,hash)  ROMX_LOAD(name, offset, length, hash, ROM_GROUPDWORD | ROM_REVERSE | ROM_SKIP(4))
+#define ROM_LOAD64_WORD(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_SKIP(6))
+#define ROM_LOAD64_WORD_SWAP(name,offset,length,hash) ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(6))
+#define ROM_LOAD64_DWORD_SWAP(name,offset,length,hash) ROMX_LOAD(name, offset, length, hash, ROM_GROUPDWORD | ROM_REVERSE | ROM_SKIP(4))
 
 /* ----- disk loading macros ----- */
 #define DISK_REGION(type)							ROM_REGION(1, type, ROMREGION_DATATYPEDISK)
@@ -392,7 +395,8 @@ enum
 /* ----- ROM region macros ----- */
 #define SYSTEM_BIOS_ADD(value,name,description)		{ (int)value, (const char*)name, (const char*)description },
 #define BIOS_DEFAULT			"default"
-#define ROM_DEFAULT_BIOS(name) 						{	0		, (const char*)name, NULL},
+
+
 /***************************************************************************
 
 	Function prototypes
@@ -450,9 +454,6 @@ struct mame_bitmap *auto_bitmap_alloc_depth(int width,int height,int depth);
 
 /* disk handling */
 struct chd_file *get_disk_handle(int diskindex);
-
-/* get bios number */
-int determine_bios_rom(const struct SystemBios *bios);
 
 /* ROM processing */
 int rom_load(const struct RomModule *romp);
@@ -562,6 +563,14 @@ void printromlist(const struct RomModule *romp,const char *name);
          (BIT(val, B2) <<  2) | \
          (BIT(val, B1) <<  1) | \
          (BIT(val, B0) <<  0))
+
+/* Standard MIN/MAX macros */
+#ifndef MIN
+#define MIN(x,y)			((x) < (y) ? (x) : (y))
+#endif
+#ifndef MAX
+#define MAX(x,y)			((x) > (y) ? (x) : (y))
+#endif
 
 
 #ifdef __cplusplus

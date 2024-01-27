@@ -145,6 +145,7 @@ static const char *mame_default_text[] =
 	"X Position",
 	"Y Position",
 	"Watch",
+
 	"Hex",
 	"Decimal",
 	"Binary",

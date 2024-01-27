@@ -407,39 +407,6 @@ static struct retro_core_option_v2_definition option_def_dial_swap_xy = {
    "disabled"
 };
 
-static struct retro_core_option_v2_definition option_def_deadzone = {
-   APPNAME"_deadzone",
-   "Analog Deadzone",
-   NULL,
-   "Modifies the deadzone travel distance by a set percentage.",
-   NULL,
-   "cat_key_input",
-   {
-      { "0",   "0%" },
-      { "5",   "5%" },
-      { "10", "10%" },
-      { "15", "15%" },
-      { "20", "20%" },
-      { "25", "25%" },
-      { "30", "30%" },
-      { "35", "35%" },
-      { "40", "40%" },
-      { "45", "45%" },
-      { "50", "50%" },
-      { "55", "55%" },
-      { "60", "60%" },
-      { "65", "65%" },
-      { "70", "70%" },
-      { "75", "75%" },
-      { "80", "80%" },
-      { "85", "85%" },
-      { "90", "90%" },
-      { "95", "95%" },
-      { NULL, NULL },
-   },
-   "20"
-};
-
 static struct retro_core_option_v2_definition option_def_tate_mode = {
    APPNAME"_tate_mode",
    "TATE Mode",
@@ -732,21 +699,6 @@ static struct retro_core_option_v2_definition option_def_cheat_input_ports = {
    "disabled"
 };
 
-static struct retro_core_option_v2_definition option_def_machine_timing = {
-   APPNAME"_machine_timing",
-   "Bypass Audio Skew",
-   NULL,
-   "Restart core required.",
-   NULL,
-   "cat_key_audio",
-   {
-      { "disabled", NULL },
-      { "enabled",  NULL },
-      { NULL, NULL },
-   },
-   "disabled"
-};
-
 static struct retro_core_option_v2_definition option_def_digital_joy_centering = {
    APPNAME"_digital_joy_centering",
    "Center Joystick Axis for Digital Controls",
@@ -791,6 +743,9 @@ static struct retro_core_option_v2_definition option_def_cpu_clock_scale = {
       { "115",   "115%" },
       { "120",   "120%" },
       { "125",   "125%" },
+      { "200",   "200%" },
+      { "250",   "250%" },
+      { "300",   "300%" },
       { NULL, NULL },
    },
    "default"
@@ -829,6 +784,21 @@ static struct retro_core_option_v2_definition option_def_override_ad_stick = {
       { NULL, NULL },
    },
    "disabled"
+};
+
+static struct retro_core_option_v2_definition option_def_input_toggle = {
+   APPNAME"_input_toggle",
+   "Allow Input Button to Act as a Toggle Switch",
+   NULL,
+   "Disable to use actual hardware such as a fixed position high/low shifter.",
+   NULL,
+   "cat_key_input",
+   {
+      { "enabled",  NULL },
+      { "disabled", NULL },
+      { NULL, NULL },
+   },
+   "enabled"
 };
 
 static struct retro_core_option_v2_definition option_def_null = {
@@ -897,7 +867,6 @@ void init_core_options(void)
   default_options[OPT_USE_ALT_SOUND]             = option_def_use_alt_sound;
   default_options[OPT_SHARE_DIAL]                = option_def_dialsharexy;
   default_options[OPT_DIAL_SWAP_XY]              = option_def_dial_swap_xy;
-  default_options[OPT_DEADZONE]                  = option_def_deadzone;
   default_options[OPT_TATE_MODE]                 = option_def_tate_mode;
   default_options[OPT_VECTOR_RESOLUTION]         = option_def_vector_resolution;
   default_options[OPT_VECTOR_ANTIALIAS]          = option_def_vector_antialias;
@@ -914,10 +883,10 @@ void init_core_options(void)
   default_options[OPT_CORE_SAVE_SUBFOLDER]       = option_def_core_save_subfolder;
   default_options[OPT_AUTOSAVE_HISCORE]          = option_def_autosave_hiscore;
   default_options[OPT_CHEAT_INPUT_PORTS]         = option_def_cheat_input_ports;
-  default_options[OPT_MACHINE_TIMING]            = option_def_machine_timing;
   default_options[OPT_DIGITAL_JOY_CENTERING]     = option_def_digital_joy_centering;
   default_options[OPT_CPU_CLOCK_SCALE]           = option_def_cpu_clock_scale;
   default_options[OPT_OVERRIDE_AD_STICK]         = option_def_override_ad_stick;
+  default_options[OPT_INPUT_TOGGLE]              = option_def_input_toggle;
 #if (HAS_CYCLONE || HAS_DRZ80)
   default_options[OPT_CYCLONE_MODE]              = option_def_cyclone_mode;
 #endif
@@ -958,7 +927,9 @@ static void set_variables(void)
          break;
       case OPT_SHARE_DIAL:
       case OPT_DIAL_SWAP_XY:
-         if(!options.content_flags[CONTENT_DIAL])
+         if(options.content_flags[CONTENT_DIAL] || options.content_flags[CONTENT_PADDLE])
+           break;
+         else
            continue;
          break;
       case OPT_VECTOR_RESOLUTION:
@@ -978,13 +949,10 @@ static void set_variables(void)
          if(!options.content_flags[CONTENT_CHEAT_INPUT_PORT])
            continue;
          break;
-<<<<<<< HEAD
       case OPT_OVERRIDE_AD_STICK:
          if(!options.content_flags[CONTENT_AD_STICK])
            continue;
          break;
-=======
->>>>>>> 7268b4800bc1d7a47ba44483043167f3f45d77b5
     }
 
     effective_defaults[effective_options_count] = default_options[option_index];
@@ -1162,10 +1130,6 @@ void update_variables(bool first_time)
             options.dial_swap_xy = false;
           break;
 
-        case OPT_DEADZONE:
-            options.deadzone = atoi(var.value);
-          break;
-
         case OPT_TATE_MODE:
           if(strcmp(var.value, "enabled") == 0)
             options.tate_mode = 1;
@@ -1185,7 +1149,7 @@ void update_variables(bool first_time)
             int width = 0;
             int height = 0;
             sscanf(var.value, "%dx%d", &width, &height);
-            // if they are still 0, mame will set from driver resolution set
+            /* if they are still 0, mame will set from driver resolution set */
             options.vector_width = width;
             options.vector_height = height;
           }
@@ -1290,18 +1254,18 @@ void update_variables(bool first_time)
             options.cheat_input_ports = false;
           break;
 
-        case OPT_MACHINE_TIMING:
-          if(strcmp(var.value, "enabled") == 0)
-            options.machine_timing = true;
-          else
-            options.machine_timing = false;
-          break;
-
         case OPT_OVERRIDE_AD_STICK:
           if(strcmp(var.value, "enabled") == 0)
             options.override_ad_stick = 1;
           else
             options.override_ad_stick = 0;
+          break;
+
+        case OPT_INPUT_TOGGLE:
+          if(strcmp(var.value, "enabled") == 0)
+            options.input_toggle = true;
+          else
+            options.input_toggle = false;
           break;
 
 #if (HAS_CYCLONE || HAS_DRZ80)
@@ -1326,8 +1290,6 @@ void update_variables(bool first_time)
     }
   }
 
-  options.activate_dcs_speedhack = true; /* formerly a core option, now always on. */
-
   ledintf.set_led_state = NULL;
   environ_cb(RETRO_ENVIRONMENT_GET_LED_INTERFACE, &ledintf);
   led_state_cb = ledintf.set_led_state;
@@ -1343,9 +1305,6 @@ void update_variables(bool first_time)
 void set_content_flags(void)
 {
   int i = 0;
-
-  extern struct GameDriver driver_neogeo;
-  extern struct GameDriver driver_stvbios;
   const struct InputPortTiny *input = game_driver->input_ports;
 
 
@@ -1360,6 +1319,11 @@ void set_content_flags(void)
   }
 
   /************ DRIVERS WITH MULTIPLE BIOS OPTIONS ************/
+#ifndef SPLIT_CORE
+ {
+  extern struct GameDriver driver_neogeo;
+  extern struct GameDriver driver_stvbios;
+
   if (game_driver->clone_of == &driver_neogeo
    ||(game_driver->clone_of && game_driver->clone_of->clone_of == &driver_neogeo))
   {
@@ -1370,6 +1334,8 @@ void set_content_flags(void)
   {
     options.content_flags[CONTENT_STV] = true;
   }
+}
+#endif
 
   /************ DIE HARD: ARCADE ************/
   if(strcasecmp(game_driver->name, "diehard") == 0)

@@ -312,66 +312,13 @@ enum {
 	STR_Service_Mode,
 	STR_Unused,
 	STR_Unknown,
-	STR_TOTAL,	
-	STR_Pause,
-	STR_Test,
-	STR_Tilt,
-	STR_Version,
-	STR_Region,
-	STR_International,
-	STR_Japan,
-	STR_USA,
-	STR_Europe,
-	STR_Asia,
-	STR_China,
-	STR_Hong_Kong,
-	STR_Korea,
-	STR_Southeast_Asia,
-	STR_Taiwan,
-	STR_World,
-	STR_Language,
-	STR_English,
-	STR_Japanese,
-	STR_Chinese,
-	STR_French,
-	STR_German,
-	STR_Italian,
-	STR_Korean,
-	STR_Spanish,
-	STR_Very_Easy,
-	STR_Easiest,
-	STR_Easier,
-	STR_Easy,
-	STR_Medium_Easy,
-	STR_Normal,
-	STR_Medium,
-	STR_Medium_Hard,
-	STR_Hard,
-	STR_Harder,
 	STR_Hardest,
-	STR_Very_Hard,
-	STR_Medium_Difficult,
-	STR_Difficult,
-	STR_Very_Difficult,
-	STR_Very_Low,
-	STR_Low,
-	STR_High,
-	STR_Higher,
-	STR_Highest,
-	STR_Very_High,
-	STR_Players,
-	STR_Controls,
-	STR_Dual,
-	STR_Single,
-	STR_Game_Time,
-	STR_Continue_Price,
-	STR_Controller,
-	STR_Light_Gun,
-	STR_Joystick,
-	STR_Trackball,
-	STR_Continues,
+	STR_Hard,
+	STR_Normal,
+	STR_Easy,
 	STR_Allow_Continue,
-	STR_Level_Select,
+	STR_None,
+	STR_TOTAL
 };
 
 enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY };
@@ -474,12 +421,6 @@ struct ik
 	UINT32 val;
 };
 
-
-extern struct ik input_keywords[];
-extern struct ik *osd_input_keywords;
-extern int num_ik;
-
-void seq_set_string(InputSeq* a, const char *buf);
 const char *generic_ctrl_label(int input);
 
 /* 

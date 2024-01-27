@@ -1,5 +1,6 @@
 TARGET_NAME := mame2003_plus
 CORE_DIR    := src
+INCLUDE_DRV ?= all
 
 DEBUG         ?= 0
 DEBUGGER      ?= 0
@@ -206,9 +207,6 @@ else ifeq ($(platform), rpi2)
 
 # Raspberry Pi 3
 else ifeq ($(platform), rpi3)
-	CC = arm-linux-gnueabihf-gcc
-	CXX = arm-linux-gnueabihf-g++
-	AR = arm-linux-gnueabihf-ar
 	TARGET = $(TARGET_NAME)_libretro.so
 	fpic = -fPIC
 	CFLAGS += $(fpic)
@@ -232,9 +230,6 @@ else ifeq ($(platform), rpi3_64)
 
 # Raspberry Pi 4
 else ifeq ($(platform), rpi4)
-	CC = arm-linux-gnueabihf-gcc
-	CXX = arm-linux-gnueabihf-g++
-	AR = arm-linux-gnueabihf-ar
 	TARGET = $(TARGET_NAME)_libretro.so
 	fpic = -fPIC
 	CFLAGS += $(fpic)
@@ -384,13 +379,15 @@ else ifeq ($(platform), ngc)
 
 # Nintendo Wii
 else ifeq ($(platform), wii)
-	TARGET = $(TARGET_NAME)_libretro_$(platform).a
+	TARGET = $(TARGET_NAME)_$(INCLUDE_DRV)_libretro_$(platform).a
 	BIGENDIAN = 1
 	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
 	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
 	PLATCFLAGS += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -D__ppc__ -D__POWERPC__
 	PLATCFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
+	PLATCFLAGS += -D$(INCLUDE_DRV) -DSPLIT_CORE
 	STATIC_LINKING = 1
+	ZLIB_UNCOMPRESS = 1
 
 # Nintendo WiiU
 else ifeq ($(platform), wiiu)
@@ -762,12 +759,11 @@ else
 	CFLAGS += -D__WIN32__
 endif
 
-# Architecture-specific flags #############################
 
+# Architecture-specific flags #############################
 ifeq ($(BIGENDIAN), 1)
 	PLATCFLAGS += -DMSB_FIRST
 endif
-
 # End of architecture-specific flags ######################
 
 # Platform-specific flags #################################
@@ -814,7 +810,7 @@ CFLAGS += -DHAVE_ZLIB
 
 # In theory, the RETRO_PROFILE could be set to different values for different
 # architectures or for special builds to hint to the host system how many
-# resources to allocate. In practice, there seems to be no standard way to 
+# resources to allocate. In practice, there seems to be no standard way to
 # rate performance needs and no point in doing so.
 # As of June 2021, the libretro performance profile callback is not known
 # to be implemented by any frontends. RetroArch does not use this callback
@@ -842,7 +838,11 @@ endif
 endif
 
 # include the various .mak files
-include Makefile.common
+ifneq (,$(filter $(INCLUDE_DRV),all))
+	include Makefile.common
+else
+	include Makefile.split
+endif
 
 # build the targets in different object dirs, since mess changes
 # some structures and thus they can't be linked against each other.

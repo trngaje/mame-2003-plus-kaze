@@ -67,7 +67,6 @@ static void get_playfield2_tile_info(int tile_index)
 }
 
 
-
 /*************************************
  *
  *	Video system start
@@ -259,7 +258,6 @@ void batman_scanline_update(int scanline)
 			}
 	}
 }
-
 
 
 /*************************************

@@ -84,17 +84,17 @@ INPUT_PORTS_START( mk )
 	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  | IPF_PLAYER1 | IPF_8WAY )
 	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  | IPF_PLAYER1 | IPF_8WAY )
 	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT | IPF_PLAYER1 | IPF_8WAY )
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER1 )
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER1 )
-	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER1 )
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER1 ) /* HP */
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER1 ) /* Block */
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER1 ) /* HK */
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_UNUSED )
 	PORT_BIT( 0x0100, IP_ACTIVE_LOW, IPT_JOYSTICK_UP    | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0200, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0400, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0800, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT | IPF_PLAYER2 | IPF_8WAY )
-	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER2 )
-	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER2 )
-	PORT_BIT( 0x4000, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER2 )
+	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER2 ) /* HP */
+	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER2 ) /* Block */
+	PORT_BIT( 0x4000, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER2 ) /* HK */
 	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_UNUSED )
 
 	PORT_START
@@ -107,13 +107,14 @@ INPUT_PORTS_START( mk )
 	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_SERVICE1 )
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_COIN3 )
 	PORT_BIT( 0x0100, IP_ACTIVE_LOW, IPT_COIN4 )
-	PORT_BIT( 0x0200, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER2 )
-	PORT_BIT( 0x0400, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER2 )
-	PORT_BIT( 0x0800, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER2 )
-	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER1 )
-	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER1 )
+	PORT_BIT( 0x0200, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER2 ) /* LP */
+	PORT_BIT( 0x0400, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER2 ) /* LK */
+	PORT_BIT( 0x0800, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER2 ) /* Block2 */
+
+	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER1 ) /* LP */
+	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER1 ) /* LK */
 	PORT_BIT( 0x4000, IP_ACTIVE_LOW, IPT_UNUSED )
-	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER1 )
+	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER1 ) /* Block2 */
 	/*There should be an additional block button for player 2, but I coudn't find it.*/
 
 	PORT_START
@@ -182,17 +183,17 @@ INPUT_PORTS_START( mk2 )
 	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  | IPF_PLAYER1 | IPF_8WAY )
 	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  | IPF_PLAYER1 | IPF_8WAY )
 	PORT_BIT( 0x0008, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT | IPF_PLAYER1 | IPF_8WAY )
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER1 )
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER1 )
-	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER1 )
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER1 ) /* HP */
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER1 ) /* Block */
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER1 ) /* HK */
 	PORT_BIT( 0x0080, IP_ACTIVE_LOW, IPT_UNUSED )
 	PORT_BIT( 0x0100, IP_ACTIVE_LOW, IPT_JOYSTICK_UP    | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0200, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN  | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0400, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT  | IPF_PLAYER2 | IPF_8WAY )
 	PORT_BIT( 0x0800, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT | IPF_PLAYER2 | IPF_8WAY )
-	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER2 )
-	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER2 )
-	PORT_BIT( 0x4000, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER2 )
+	PORT_BIT( 0x1000, IP_ACTIVE_LOW, IPT_BUTTON3 | IPF_PLAYER2 ) /* HP */
+	PORT_BIT( 0x2000, IP_ACTIVE_LOW, IPT_BUTTON5 | IPF_PLAYER2 ) /* Block */
+	PORT_BIT( 0x4000, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER2 ) /* HK */
 	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_UNUSED )
 
 	PORT_START
@@ -213,13 +214,13 @@ INPUT_PORTS_START( mk2 )
 	PORT_BIT( 0x8000, IP_ACTIVE_LOW, IPT_UNUSED ) /*Renamed to unused because without it the game seemed to hold P1 Block down-someone with more experience should check*/
 
 	PORT_START
-	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER1 )
-	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER1 )
-	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER1 )
+	PORT_BIT( 0x0001, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER1 ) /* LP */
+	PORT_BIT( 0x0002, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER1 ) /* LK */
+	PORT_BIT( 0x0004, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER1 ) /* Block2 */
 	PORT_BIT( 0x000c, IP_ACTIVE_LOW, IPT_UNUSED )
-	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER2 )
-	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON4 | IPF_PLAYER2 )
-	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER2 )
+	PORT_BIT( 0x0010, IP_ACTIVE_LOW, IPT_BUTTON1 | IPF_PLAYER2 ) /* LP */
+	PORT_BIT( 0x0020, IP_ACTIVE_LOW, IPT_BUTTON2 | IPF_PLAYER2 ) /* LK */
+	PORT_BIT( 0x0040, IP_ACTIVE_LOW, IPT_BUTTON6 | IPF_PLAYER2 ) /* Block2 */
 	PORT_BIT( 0xffc0, IP_ACTIVE_LOW, IPT_UNUSED )
 	/*Note-the real MK2 board has a special cable designed for SF2 cab conversions that has the 2 SF2
           Medium punch/kick buttons as block buttons for MK2. The secondary block button registers in test mode,
@@ -658,12 +659,7 @@ static MACHINE_DRIVER_START( mk )
 
 	/* Lets add our Mortal Kombat music sample packs.*/
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
-	MDRV_SOUND_ADD_TAG("OST Samples", SAMPLES, ost_mk)
-<<<<<<< HEAD
-	init_ost_settings(OST_SUPPORT_MK_T);
-=======
-	mk_playing_mortal_kombat_t = true;
->>>>>>> 7268b4800bc1d7a47ba44483043167f3f45d77b5
+	MDRV_INSTALL_OST_SUPPORT(OST_SUPPORT_MK)
 MACHINE_DRIVER_END
 
 static MACHINE_DRIVER_START( nbajam )
@@ -674,20 +670,7 @@ static MACHINE_DRIVER_START( nbajam )
 
 	/* Lets add our NBA Jam music sample packs.*/
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
-	MDRV_SOUND_ADD_TAG("OST Samples", SAMPLES, ost_nba_jam)
-<<<<<<< HEAD
-	init_ost_settings(OST_SUPPORT_NBA_JAM);
-=======
-	nba_jam_playing = true;
-	nba_jam_title_screen = false;
-	nba_jam_select_screen = false;
-	nba_jam_intermission = false;
-	nba_jam_in_game = false;
-	nba_jam_boot_up	= true;
-	nba_jam_playing_title_music = false;
-	m_nba_last_offset = 0;
-	m_nba_start_counter = 0;
->>>>>>> 7268b4800bc1d7a47ba44483043167f3f45d77b5
+	MDRV_INSTALL_OST_SUPPORT(OST_SUPPORT_NBA_JAM)
 MACHINE_DRIVER_END
 
 
@@ -1360,6 +1343,44 @@ ROM_START( nbajamt3 )
 ROM_END
 
 
+ROM_START( nbajamtr )
+	ROM_REGION( 0x10, REGION_CPU1, 0 )		/* 34010 dummy region */
+
+	ROM_REGION( 0x50000, REGION_CPU2, 0 ) /* sound CPU */
+	ROM_LOAD(  "te-u3.bin", 0x010000, 0x20000, CRC(d4551195) SHA1(e8908fbe4339fb8c93f7e74113dfd25dda1667ea) )
+	ROM_RELOAD(             0x030000, 0x20000 )
+
+	ROM_REGION( 0x1c0000, REGION_SOUND1, 0 )	/* ADPCM */
+	ROM_LOAD( "nbajamtr.u12", 0x000000, 0x80000, CRC(cd5d4532) SHA1(63ff4b5b22e02ee90cdcb745acc6bf9dbc1c3140) )
+	ROM_LOAD( "nbajamtr.u13", 0x080000, 0x80000, CRC(c4cbede2) SHA1(8b1a26ee852281de1564af35fc3605a89eb0b7dd) )
+
+	ROM_REGION16_LE( 0x100000, REGION_USER1, ROMREGION_DISPOSE )	/* 34010 code */
+	ROM_LOAD16_BYTE( "nbajamtr.uj12", 0x00000, 0x80000, CRC(383cd3ec) SHA1(ab1cfa38af37f36a8701b7b7a26f1d242050ad45) )
+	ROM_LOAD16_BYTE( "nbajamtr.ug12", 0x00001, 0x80000, CRC(18e75204) SHA1(e33eaa969dbc7ac19641238fc62d2af4d75bddef) )
+
+	ROM_REGION( 0xc00000, REGION_GFX1, ROMREGION_DISPOSE )
+	ROM_LOAD( "nbaug14.bin",   0x000000, 0x80000, CRC(04bb9f64) SHA1(9e1a8c37e14cb6fe67f4aa3caa9022f356f1ca64) )
+	ROM_LOAD( "nbajamtr.ug16", 0x080000, 0x80000, CRC(b9a07a6f) SHA1(0b9410ae9d761928b828449f45302f0951a6a8af) )
+	ROM_LOAD( "nbajamtr.ug17", 0x100000, 0x80000, CRC(34c6bdb8) SHA1(fe613fc3256eafc368ba566dd989c05293df1829) )
+	ROM_LOAD( "nbajamtr.ug18", 0x180000, 0x80000, CRC(fe18a6ef) SHA1(58b8bbf257b3de5d7536421dda302e2d93f51999) )
+
+	ROM_LOAD( "nbauj14.bin",   0x300000, 0x80000, CRC(b34b7af3) SHA1(0abb74d2f414bc9da0380a81beb134f3a87c1a0a) )
+	ROM_LOAD( "nbajamtr.uj16", 0x380000, 0x80000, CRC(ffa7db04) SHA1(984a1011f378d7e77acf43f285f7c72f035fc7ee) )
+	ROM_LOAD( "nbajamtr.uj17", 0x400000, 0x80000, CRC(3af5b32e) SHA1(397d2524a5749f8e8419280cc3c48ec3081834b5) )
+	ROM_LOAD( "nbajamtr.uj18", 0x480000, 0x80000, CRC(9a6d36de) SHA1(1bb24ff5fdbdc1f7265da0ba43e3d96ab589548f) )
+
+	ROM_LOAD( "nbaug19.bin",   0x600000, 0x80000, CRC(a8f22fbb) SHA1(514208a9d6d0c8c2d7847cc02d4387eac90be659) )
+	ROM_LOAD( "nbajamtr.ug20", 0x680000, 0x80000, CRC(67c8646b) SHA1(a0584e79cdd5c83cd62bda09470f67082a670fe1) )
+	ROM_LOAD( "nbajamtr.ug22", 0x700000, 0x80000, CRC(d41234d2) SHA1(9dab65c7843758572634c4805227fee1850b0349) )
+	ROM_LOAD( "nbajamtr.ug23", 0x780000, 0x80000, CRC(8d1af1a6) SHA1(4de21240ec0ffce9346e75b9719d9ae71bfbdb8e) )
+
+	ROM_LOAD( "nbauj19.bin",   0x900000, 0x80000, CRC(8130a8a2) SHA1(f23f124024285d07d8cf822817b62e42c38b82db) )
+	ROM_LOAD( "nbajamtr.uj20", 0x980000, 0x80000, CRC(71d028f8) SHA1(6c9d3cb6b937a53af8be0c7c5e209fb8740d6d9a) )
+	ROM_LOAD( "nbajamtr.uj22", 0xa00000, 0x80000, CRC(42196c84) SHA1(7f30204a4764b4afd38cf82f8be909c9ee5a0a0b) )
+	ROM_LOAD( "nbajamtr.uj23", 0xa80000, 0x80000, CRC(b5bf66f9) SHA1(de12e47e44f9cf7c611d674fe6c9b3466fde2081) )
+ROM_END
+
+
 ROM_START( jdreddp )
 	ROM_REGION( 0x10, REGION_CPU1, 0 )		/* 34010 dummy region */
 
@@ -1421,7 +1442,9 @@ GAME( 1993, jdreddp,  0,       tunit_adpcm, jdreddp, jdreddp,  ROT0, "Midway",  
 
 GAMEC( 1993, nbajam,   0,       nbajam,      nbajam,    nbajam,   ROT0, "Midway", "NBA Jam (rev 3.01 04-07-93)", &nbajam_ctrl, &nbajam_bootstrap )
 GAMEC( 1993, nbajamr2, nbajam,  nbajam,      nbajam,    nbajam20, ROT0, "Midway", "NBA Jam (rev 2.00 02-10-93)", &nbajam_ctrl, &nbajamr2_bootstrap )
-GAMEC( 1994, nbajamte, nbajam,  tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 4.0 03-23-94)", &nbajam_ctrl, &nbajamte_bootstrap )
-GAMEC( 1994, nbajamt1, nbajam,  tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 1.0 01-17-94)", &nbajam_ctrl, &nbajamt1_bootstrap )
-GAMEC( 1994, nbajamt2, nbajam,  tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 2.0 01-28-94)", &nbajam_ctrl, &nbajamt2_bootstrap )
-GAMEC( 1994, nbajamt3, nbajam,  tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 3.0 03-04-94)", &nbajam_ctrl, &nbajamt3_bootstrap )
+
+GAMEC( 1994, nbajamte, 0,        tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 4.0 03-23-94)", &nbajam_ctrl, &nbajamte_bootstrap )
+GAMEC( 1994, nbajamt1, nbajamte, tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 1.0 01-17-94)", &nbajam_ctrl, &nbajamt1_bootstrap )
+GAMEC( 1994, nbajamt2, nbajamte, tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 2.0 01-28-94)", &nbajam_ctrl, &nbajamt2_bootstrap )
+GAMEC( 1994, nbajamt3, nbajamte, tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE (rev 3.0 03-04-94)", &nbajam_ctrl, &nbajamt3_bootstrap )
+GAMEC( 2022, nbajamtr, nbajamte, tunit_adpcm, nbajamte,  nbajamte, ROT0, "Midway", "NBA Jam TE Rewind ver 1.1", &nbajam_ctrl, NULL)

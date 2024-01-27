@@ -13,7 +13,6 @@
 #include <limits.h>
 #include <assert.h>
 
-#define USE_VOLUME_AUTO_ADJUST
 /***************************************************************************/
 /* Options */
 
@@ -107,11 +106,6 @@ static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2]; /* *2 for stereo */
 
 /* global sample tracking */
 static unsigned samples_this_frame;
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-INLINE INT16 calc_volume(int sample);
-INT32 volume_multiplier = DEFAULT_VOLUME_MULTIPLIER;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 
 /***************************************************************************
 	mixer_channel_resample
@@ -745,9 +739,7 @@ void mixer_sh_update(void)
 	struct mixer_channel_data* channel;
 	unsigned accum_pos = accum_base;
 	INT16 *mix;
-#ifndef USE_VOLUME_AUTO_ADJUST
 	int sample;
-#endif /* !USE_VOLUME_AUTO_ADJUST */
 	int i;
 
 	profiler_mark(PROFILER_MIXER);
@@ -770,10 +762,6 @@ void mixer_sh_update(void)
 		mix = mix_buffer;
 		for (i = 0; i < samples_this_frame; i++)
 		{
-#ifdef USE_VOLUME_AUTO_ADJUST
-			*mix++ = calc_volume(left_accum[accum_pos]);
-			left_accum[accum_pos] = 0;
-#else /* USE_VOLUME_AUTO_ADJUST */
 			/* fetch and clip the sample */
 			sample = left_accum[accum_pos];
          MAME_CLAMP_SAMPLE(sample);
@@ -781,7 +769,6 @@ void mixer_sh_update(void)
 			/* store and zero out behind us */
 			*mix++ = sample;
 			left_accum[accum_pos] = 0;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 
 			/* advance to the next sample */
 			accum_pos = (accum_pos + 1) & ACCUMULATOR_MASK;
@@ -794,13 +781,6 @@ void mixer_sh_update(void)
 		mix = mix_buffer;
 		for (i = 0; i < samples_this_frame; i++)
 		{
-#ifdef USE_VOLUME_AUTO_ADJUST
-			*mix++ = calc_volume(left_accum[accum_pos]);
-			left_accum[accum_pos] = 0;
-
-			*mix++ = calc_volume(right_accum[accum_pos]);
-			right_accum[accum_pos] = 0;
-#else /* USE_VOLUME_AUTO_ADJUST */
 			/* fetch and clip the left sample */
 			sample = left_accum[accum_pos];
          MAME_CLAMP_SAMPLE(sample);
@@ -816,7 +796,6 @@ void mixer_sh_update(void)
 			/* store and zero out behind us */
 			*mix++ = sample;
 			right_accum[accum_pos] = 0;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 
 			/* advance to the next sample */
 			accum_pos = (accum_pos + 1) & ACCUMULATOR_MASK;
@@ -1028,12 +1007,6 @@ void mixer_load_config(const struct mixer_config *config)
 		config_mixing_level[i] = config->mixing_levels[i];
 	}
 	is_config_invalid = 0;
-	
-#ifdef USE_VOLUME_AUTO_ADJUST
-	volume_multiplier = config->volume_multiplier;
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
-	
 }
 
 
@@ -1050,10 +1023,6 @@ void mixer_save_config(struct mixer_config *config)
 		config->default_levels[i] = mixer_channel[i].default_mixing_level;
 		config->mixing_levels[i] = mixer_channel[i].mixing_level;
 	}
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-	config->volume_multiplier = volume_multiplier;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 }
 
 
@@ -1063,9 +1032,6 @@ void mixer_save_config(struct mixer_config *config)
 
 void mixer_read_config(mame_file *f)
 {
-#ifdef USE_VOLUME_AUTO_ADJUST
-	UINT32 magic = 0;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 	struct mixer_config config;
 
 	if (mame_fread(f, config.default_levels, MIXER_MAX_CHANNELS) < MIXER_MAX_CHANNELS ||
@@ -1074,14 +1040,6 @@ void mixer_read_config(mame_file *f)
 		memset(config.default_levels, 0xff, sizeof(config.default_levels));
 		memset(config.mixing_levels, 0xff, sizeof(config.mixing_levels));
 	}
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-	mame_fread(f, &magic, sizeof magic);
-	if (magic == VOLUME_MULTIPLIER_MAGIC)
-		mame_fread(f, &config.volume_multiplier, sizeof config.volume_multiplier);
-	else
-		config.volume_multiplier = DEFAULT_VOLUME_MULTIPLIER;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 
 	mixer_load_config(&config);
 }
@@ -1093,19 +1051,11 @@ void mixer_read_config(mame_file *f)
 
 void mixer_write_config(mame_file *f)
 {
-#ifdef USE_VOLUME_AUTO_ADJUST
-	UINT32 magic = VOLUME_MULTIPLIER_MAGIC;
-#endif /* USE_VOLUME_AUTO_ADJUST */
 	struct mixer_config config;
 
 	mixer_save_config(&config);
 	mame_fwrite(f, config.default_levels, MIXER_MAX_CHANNELS);
 	mame_fwrite(f, config.mixing_levels, MIXER_MAX_CHANNELS);
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-	mame_fwrite(f, &magic, sizeof magic);
-	mame_fwrite(f, &config.volume_multiplier, sizeof config.volume_multiplier);
-#endif /* USE_VOLUME_AUTO_ADJUST */
 }
 
 
@@ -1315,20 +1265,3 @@ void mixer_sound_enable_global_w(int enable)
 
 	mixer_sound_enabled = enable;
 }
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-INLINE INT16 calc_volume(int sample)
-{
-	INT32 tmpvol;
-
-	while (1)
-	{
-		tmpvol = (sample * volume_multiplier) / 256;
-		if (tmpvol >= -32768 && tmpvol <= 32767)
-			break;
-		volume_multiplier--;
-	}
-
-	return (INT16)tmpvol;
-}
-#endif /* USE_VOLUME_AUTO_ADJUST */

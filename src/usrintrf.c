@@ -45,6 +45,7 @@ static int cheat_fe = 0;
 static int autofire_sc = 0;
 static int autofire_sel = 1;
 static int autofire_fe =0;
+
 /***************************************************************************
 
 	Externals
@@ -77,6 +78,7 @@ static int game_is_paused = 0; /* not zero if the game is paused */
 #ifdef UI_COLOR_DISPLAY
 extern void ConvertCommandMacro(char *buf);
 #endif /* UI_COLOR_DISPLAY */
+
 /***************************************************************************
 
 	Local variables
@@ -136,6 +138,7 @@ static int cmd_display_scroll_message (struct mame_bitmap *bitmap, int *scroll, 
 
 
 #endif /* CMD_PLUS */
+
 /***************************************************************************
 
 	Font data
@@ -583,6 +586,7 @@ void ui_drawtitlebar(struct mame_bitmap *bitmap, int x, int y, int len, int w)
 }
 
 #endif /* UI_TITLE_MENU */
+
 /*-------------------------------------------------
 	ui_drawchar - draw a rotated character
 -------------------------------------------------*/
@@ -599,7 +603,7 @@ void ui_drawchar(struct mame_bitmap *dest, int ch, int color, int sx, int sy)
 	ui_rot2raw_rect(&bounds);
 
 	/* now render */
-	drawgfx(dest, Machine->uirotfont, ch, color, 0, 0, bounds.min_x, bounds.min_y, &uirawbounds, TRANSPARENCY_NONE, 0);
+	drawgfx(dest, uirotfont, ch, color, 0, 0, bounds.min_x, bounds.min_y, &uirawbounds, TRANSPARENCY_NONE, 0);
 
 	/* mark dirty */
 	ui_markdirty(&bounds);
@@ -922,6 +926,7 @@ void ui_drawbox(struct mame_bitmap *bitmap, int leftx, int topy, int width, int 
 	ui_rot2raw_rect(&tbounds);
 	fillbitmap(bitmap, white, &tbounds);
 #endif
+
 	/* fill in the middle with black */
 	tbounds = bounds;
 	tbounds.min_x++;
@@ -1383,7 +1388,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 	char buf[80];
 	int mode,bank,color,firstdrawn;
 	int palpage;
-	int changed;
+/*	int changed = 1;*/
 	int total_colors = 0;
 	pen_t *colortable = NULL;
 	int cpx=0,cpy,skip_chars=0,skip_tmap=0;
@@ -1395,11 +1400,6 @@ static void showcharset(struct mame_bitmap *bitmap)
 	color = 0;
 	firstdrawn = 0;
 	palpage = 0;
-
-	changed = 1;
-
-	/* mark all the tilemaps dirty on entry so they are re-drawn consistently in the viewer */
-	tilemap_mark_all_tiles_dirty(NULL);
 
 	do
 	{
@@ -1480,7 +1480,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 						ui_text(bitmap,"N/A",3*uirotcharwidth,2*uirotcharheight);
 
 					ui_text(bitmap,buf,0,0);
-					changed = 0;
+					/*changed = 0;*/
 				}
 
 				break;
@@ -1530,7 +1530,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 
 					sprintf(buf,"GFXSET %d COLOR %2X CODE %X-%X",bank,color,firstdrawn,lastdrawn);
 					ui_text(bitmap,buf,0,0);
-					changed = 0;
+					/*changed = 0;*/
 				}
 
 				break;
@@ -1553,7 +1553,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					tilemap_nb_draw (bitmap, bank, tilemap_xpos, tilemap_ypos);
 					sprintf(buf, "TILEMAP %d (%dx%d)  X:%d  Y:%d", bank, tilemap_width, tilemap_height, tilemap_xpos, tilemap_ypos);
 					ui_text(bitmap,buf,0,0);
-					changed = 0;
+					/*changed = 0;*/
 					skip_tmap = 0;
 				}
 				break;
@@ -1611,8 +1611,8 @@ static void showcharset(struct mame_bitmap *bitmap)
 			{
 				bank = next_bank;
 				mode = next_mode;
-//              firstdrawn = 0;
-				changed = 1;
+				/*firstdrawn = 0;*/
+				/*changed = 1;*/
 			}
 		}
 
@@ -1647,8 +1647,8 @@ static void showcharset(struct mame_bitmap *bitmap)
 			{
 				bank = next_bank;
 				mode = next_mode;
-//              firstdrawn = 0;
-				changed = 1;
+				/*firstdrawn = 0;*/
+				/*changed = 1;*/
 			}
 		}
 
@@ -1661,7 +1661,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					if (256 * (palpage + 1) < total_colors)
 					{
 						palpage++;
-						changed = 1;
+						/*changed = 1;*/
 					}
 					break;
 				}
@@ -1670,7 +1670,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					if (firstdrawn + skip_chars < Machine->gfx[bank]->total_elements)
 					{
 						firstdrawn += skip_chars;
-						changed = 1;
+						/*changed = 1;*/
 					}
 					break;
 				}
@@ -1680,7 +1680,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 						tilemap_ypos -= skip_tmap;
 					else
 						tilemap_ypos -= bitmap->height/4;
-					changed = 1;
+					/*changed = 1;*/
 					break;
 				}
 			}
@@ -1695,7 +1695,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					if (palpage > 0)
 					{
 						palpage--;
-						changed = 1;
+						/*changed = 1;*/
 					}
 					break;
 				}
@@ -1703,7 +1703,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 				{
 					firstdrawn -= skip_chars;
 					if (firstdrawn < 0) firstdrawn = 0;
-					changed = 1;
+					/*changed = 1;*/
 					break;
 				}
 				case 2:
@@ -1712,7 +1712,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 						tilemap_ypos += skip_tmap;
 					else
 						tilemap_ypos += bitmap->height/4;
-					changed = 1;
+					/*changed = 1;*/
 					break;
 				}
 			}
@@ -1728,7 +1728,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 						tilemap_xpos -= skip_tmap;
 					else
 						tilemap_xpos -= bitmap->width/4;
-					changed = 1;
+					/*changed = 1;*/
 					break;
 				}
 			}
@@ -1744,7 +1744,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 						tilemap_xpos += skip_tmap;
 					else
 						tilemap_xpos += bitmap->width/4;
-					changed = 1;
+					/*changed = 1;*/
 					break;
 				}
 			}
@@ -1759,7 +1759,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					if (color < Machine->gfx[bank]->total_colors - 1)
 					{
 						color++;
-						changed = 1;
+						/*changed = 1;*/
 					}
 					break;
 				}
@@ -1777,7 +1777,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 					if (color > 0)
 					{
 						color--;
-						changed = 1;
+						/*changed = 1;*/
 					}
 				}
 			}
@@ -1786,9 +1786,6 @@ static void showcharset(struct mame_bitmap *bitmap)
 			!input_ui_pressed(IPT_UI_CANCEL));
 
 	schedule_full_refresh();
-
-	/* mark all the tilemaps dirty on exit so they are updated correctly on the next frame */
-	tilemap_mark_all_tiles_dirty(NULL);
 }
 
 
@@ -2479,6 +2476,8 @@ static int settraksettings(struct mame_bitmap *bitmap,int selected)
 	struct InputPort *in;
 	int total,total2;
 	int arrowize;
+	char label[30][40];
+	char setting[30][40];
 
 
 	sel = selected - 1;
@@ -2519,8 +2518,6 @@ static int settraksettings(struct mame_bitmap *bitmap,int selected)
 	{
 		if (i < total2 - 1)
 		{
-			char label[30][40];
-			char setting[30][40];
 			int sensitivity,delta;
 			int reverse;
 
@@ -3169,12 +3166,12 @@ void ui_copyright_and_warnings(void)
       }
     }
 
-    log_cb(RETRO_LOG_WARN, LOGPRE "\n\n%s", warning_buffer); /* log warning list to the console */
+    log_cb(RETRO_LOG_WARN, LOGPRE "\n\n%s\n", warning_buffer); /* log warning list to the console */
 
   }
 
   generate_gameinfo();
-  log_cb(RETRO_LOG_INFO, LOGPRE "\n\n%s", message_buffer);
+  log_cb(RETRO_LOG_INFO, LOGPRE "\n\n%s\n", message_buffer);
 
   if(strlen(buffer))
     usrintf_showmessage_secs(8, "%s", buffer);
@@ -3396,12 +3393,10 @@ static void display_scroll_message (struct mame_bitmap *bitmap, int *scroll, int
 static int displayhistory (struct mame_bitmap *bitmap, int selected)
 {
 	static int scroll = 0;
-	static int counter = 0;
-	static int fast = 4;
 	static char *buf = 0;
 	int maxcols,maxrows;
 	int sel;
-	int bufsize = 256 * 1024; // 256KB of history.dat buffer, enough for everything
+	int bufsize = 256 * 1024; /* 256KB of history.dat buffer, enough for everything */
 
 	sel = selected - 1;
 
@@ -3418,12 +3413,6 @@ static int displayhistory (struct mame_bitmap *bitmap, int selected)
 
 		if (buf)
 		{
-			/* Disable sound to prevent strange sound*/
-#ifdef CODE_FIX /* Fixed: game_is_paused */
-			if (!game_is_paused)
-				osd_sound_enable(0);
-#endif /* CODE_FIX */
-
 			/* try to load entry */
 			if (load_driver_history (Machine->gamedrv, buf, bufsize) == 0)
 			{
@@ -3442,12 +3431,6 @@ static int displayhistory (struct mame_bitmap *bitmap, int selected)
 				free (buf);
 				buf = 0;
 			}
-
-#ifdef CODE_FIX /* Fixed: game_is_paused */
-			if (!game_is_paused)
-				osd_sound_enable(1);
-#endif /* CODE_FIX */
-
 		}
 	}
 
@@ -3673,8 +3656,8 @@ void setup_menu_init(void)
   {
 	  menu_item[menu_total] = ui_getstring (UI_inputgeneral);      menu_action[menu_total++] = UI_DEFCODE;
     menu_item[menu_total] = ui_getstring (UI_inputspecific);     menu_action[menu_total++] = UI_CODE;
-    //menu_item[menu_total] = ui_getstring (UI_flush_current_cfg); menu_action[menu_total++] = UI_FLUSH_CURRENT_CFG;
-    //menu_item[menu_total] = ui_getstring (UI_flush_all_cfg);     menu_action[menu_total++] = UI_FLUSH_ALL_CFG;
+    /*menu_item[menu_total] = ui_getstring (UI_flush_current_cfg); menu_action[menu_total++] = UI_FLUSH_CURRENT_CFG; */
+    /*menu_item[menu_total] = ui_getstring (UI_flush_all_cfg);     menu_action[menu_total++] = UI_FLUSH_ALL_CFG; */
   }
 
 	/* Determine if there are any dip switches */
@@ -3744,7 +3727,7 @@ void setup_menu_init(void)
 		menu_item[menu_total] = ui_getstring (UI_memorycard); menu_action[menu_total++] = UI_MEMCARD;
 	}
 
-#if !defined(WIIU) && !defined(GEKKO) && !defined(__CELLOS_LV2__) && !defined(__SWITCH__) && !defined(PSP) && !defined(VITA) && !defined(__GCW0__) && !defined(__EMSCRIPTEN__) && !defined(_XBOX)
+#if !defined(SPLIT_CORE) && !defined(WIIU) && !defined(GEKKO) && !defined(__CELLOS_LV2__) && !defined(__SWITCH__) && !defined(PSP) && !defined(VITA) && !defined(__GCW0__) && !defined(__EMSCRIPTEN__) && !defined(_XBOX)
     /* don't offer to generate_xml_dat on consoles where it can't be used */
     menu_item[menu_total] = ui_getstring (UI_generate_xml_dat);   menu_action[menu_total++] = UI_GENERATE_XML_DAT;
 

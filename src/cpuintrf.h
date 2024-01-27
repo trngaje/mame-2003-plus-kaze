@@ -337,10 +337,7 @@ enum
 
 	/* interrupt parameters */
 	MAX_IRQ_LINES =	16,			/* maximum number of IRQ lines per CPU */
-	IRQ_LINE_NMI = 127,			/* IRQ line for NMIs */
-
-	INPUT_LINE_RESET = MAX_IRQ_LINES - 2,
-	INPUT_LINE_HALT = MAX_IRQ_LINES - 1
+	IRQ_LINE_NMI = 127			/* IRQ line for NMIs */
 };
 
 

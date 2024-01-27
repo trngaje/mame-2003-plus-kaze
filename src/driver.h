@@ -155,27 +155,6 @@
 		cpu->port_write = (writeport);									\
 	}																	\
 
-#define MDRV_CPU_PROGRAM_MAP(readmem, writemem)							\
-	if (cpu)															\
-	{																	\
-		cpu->construct_map[ADDRESS_SPACE_PROGRAM][0] = (construct_map_##readmem); \
-		cpu->construct_map[ADDRESS_SPACE_PROGRAM][1] = (construct_map_##writemem); \
-	}																	\
-
-#define MDRV_CPU_DATA_MAP(readmem, writemem)							\
-	if (cpu)															\
-	{																	\
-		cpu->construct_map[ADDRESS_SPACE_DATA][0] = (construct_map_##readmem); \
-		cpu->construct_map[ADDRESS_SPACE_DATA][1] = (construct_map_##writemem); \
-	}																	\
-
-#define MDRV_CPU_IO_MAP(readmem, writemem)								\
-	if (cpu)															\
-	{																	\
-		cpu->construct_map[ADDRESS_SPACE_IO][0] = (construct_map_##readmem); \
-		cpu->construct_map[ADDRESS_SPACE_IO][1] = (construct_map_##writemem); \
-	}	
-	
 #define MDRV_CPU_VBLANK_INT(func, rate)									\
 	if (cpu)															\
 	{																	\
@@ -615,7 +594,5 @@ extern const struct GameDriver *drivers[];
 extern const struct GameDriver *test_drivers[];
 
 extern const int total_drivers;
-
-extern unsigned activate_dcs_speedhack;
 
 #endif

@@ -46,7 +46,6 @@ struct MachineCPU
 	const void *memory_write;				/* struct Memory_WriteAddress */
 	const void *port_read;
 	const void *port_write;
-	construct_map_t construct_map[ADDRESS_SPACES][2]; /* 2 memory maps per address space */
 	void 		(*vblank_interrupt)(void);	/* for interrupts tied to VBLANK */
 	int 		vblank_interrupts_per_frame;/* usually 1 */
 	void 		(*timed_interrupt)(void);	/* for interrupts not tied to VBLANK */
@@ -104,6 +103,7 @@ void mame_frame(void);
 
 /* 8-bit watchdog read/write handlers */
 WRITE_HANDLER( watchdog_reset_w );
+WRITE_HANDLER( watchdog_400_reset_w );
 READ_HANDLER( watchdog_reset_r );
 
 /* 16-bit watchdog read/write handlers */

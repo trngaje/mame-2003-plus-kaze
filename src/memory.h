@@ -80,7 +80,6 @@ typedef UINT8			data8_t;
 typedef UINT16			data16_t;
 typedef UINT32			data32_t;
 typedef UINT32			offs_t;
-typedef UINT64			data64_t;
 
 /* ----- typedefs for the various common memory/port handlers ----- */
 typedef data8_t			(*read8_handler)  (UNUSEDARG offs_t offset);
@@ -90,8 +89,6 @@ typedef void			(*write16_handler)(UNUSEDARG offs_t offset, UNUSEDARG data16_t da
 typedef data32_t		(*read32_handler) (UNUSEDARG offs_t offset, UNUSEDARG data32_t mem_mask);
 typedef void			(*write32_handler)(UNUSEDARG offs_t offset, UNUSEDARG data32_t data, UNUSEDARG data32_t mem_mask);
 typedef offs_t			(*opbase_handler) (UNUSEDARG offs_t address);
-typedef data64_t		(*read64_handler) (UNUSEDARG offs_t offset, UNUSEDARG data64_t mem_mask);
-typedef void			(*write64_handler)(UNUSEDARG offs_t offset, UNUSEDARG data64_t data, UNUSEDARG data64_t mem_mask);
 
 /* ----- typedefs for the various common memory handlers ----- */
 typedef read8_handler	mem_read_handler;
@@ -118,8 +115,6 @@ struct ExtMemory
 };
 
 
-/* ----- for generic function pointers ----- */
-typedef void genf(void);
 
 /***************************************************************************
 
@@ -163,48 +158,6 @@ typedef void genf(void);
 	declared within each driver.
 
 ***************************************************************************/
-
-
-/***************************************************************************
-
-	Address array constants
-
-	These apply to values in the array of read/write handlers that is
-	declared within each driver.
-
-***************************************************************************/
-
-/* ----- definitions for the flags in the address maps ----- */
-#define AM_FLAGS_EXTENDED		0x01					/* this is an extended entry with the below flags in the start field */
-#define AM_FLAGS_MATCH_MASK		0x02					/* this entry should have the start/end pair treated as a match/mask pair */
-#define AM_FLAGS_END			0x04					/* this is the terminating entry in the array */
-
-/* ----- definitions for the extended flags in the address maps ----- */
-#define AMEF_SPECIFIES_SPACE	0x00000001				/* set if the address space is specified */
-#define AMEF_SPECIFIES_ABITS	0x00000002				/* set if the number of address space bits is specified */
-#define AMEF_SPECIFIES_DBITS	0x00000004				/* set if the databus width is specified */
-#define AMEF_SPECIFIES_UNMAP	0x00000008				/* set if the unmap value is specified */
-
-/* ----- definitions for specifying the address space in the extended flags ----- */
-#define AMEF_SPACE_SHIFT		8						/* shift to get at the address space */
-#define AMEF_SPACE_MASK			(0x0f << AMEF_SPACE_SHIFT) /* mask to get at the address space */
-#define AMEF_SPACE(x)			(((x) << AMEF_SPACE_SHIFT) | AMEF_SPECIFIES_SPACE) /* specifies a given address space */
-
-/* ----- definitions for specifying the address bus width in the extended flags ----- */
-#define AMEF_ABITS_SHIFT		12						/* shift to get the address bits count */
-#define AMEF_ABITS_MASK			(0x3f << AMEF_ABITS_SHIFT) /* mask to get at the address bits count */
-#define AMEF_ABITS(n)			(((n) << AMEF_ABITS_SHIFT) | AMEF_SPECIFIES_ABITS) /* specifies a given number of address  */
-
-/* ----- definitions for specifying the data bus width in the extended flags ----- */
-#define AMEF_DBITS_SHIFT		18						/* shift to get the data bits count */
-#define AMEF_DBITS_MASK			(0x07 << AMEF_DBITS_SHIFT) /* mask to get at the data bits count */
-#define AMEF_DBITS(n)			((((n)/8-1) << AMEF_DBITS_SHIFT) | AMEF_SPECIFIES_DBITS) /* specifies a given data bus width */
-
-/* ----- definitions for specifying the unmap value in the extended flags ----- */
-#define AMEF_UNMAP_SHIFT		21						/* shift to get the unmap value */
-#define AMEF_UNMAP_MASK			(1 << AMEF_UNMAP_SHIFT)	/* mask to get at the unmap value */
-#define AMEF_UNMAP(x)			(((x) << AMEF_UNMAP_SHIFT) | AMEF_SPECIFIES_UNMAP) /* specifies a given unmap value */
-
 
 /* ----- memory/port width constants ----- */
 #define MEMPORT_WIDTH_MASK		0x00000003				/* mask to get at the width bits */
@@ -584,54 +537,6 @@ struct IO_WritePort32
 };
 
 
-// 094
-/* ----- a union of all the different read handler types ----- */
-union read_handlers_t
-{
-	genf *				handler;
-	read8_handler		handler8;
-	read16_handler		handler16;
-	read32_handler		handler32;
-	read64_handler		handler64;
-};
-
-/* ----- a union of all the different write handler types ----- */
-union write_handlers_t
-{
-	genf *				handler;
-	write8_handler		handler8;
-	write16_handler		handler16;
-	write32_handler		handler32;
-	write64_handler		handler64;
-};
-
-/* ----- a generic address map type ----- */
-struct address_map_t
-{
-	UINT32				flags;				/* flags and additional info about this entry */
-	offs_t				start, end;			/* start/end (or mask/match) values */
-	offs_t				mirror;				/* mirror bits */
-	offs_t				mask;				/* mask bits */
-	union read_handlers_t read;				/* read handler callback */
-	union write_handlers_t write;			/* write handler callback */
-	void *				memory;				/* pointer to memory backing this entry */
-	UINT32				share;				/* index of a shared memory block */
-	void **				base;				/* receives pointer to memory (optional) */
-	size_t *			size;				/* receives size of area in bytes (optional) */
-};
-
-/* ----- structs to contain internal data ----- */
-struct address_space_t
-{
-	offs_t				addrmask;			/* address mask */
-	UINT8 *				readlookup;			/* read table lookup */
-	UINT8 *				writelookup;		/* write table lookup */
-	struct handler_data_t *readhandlers;	/* read handlers */
-	struct handler_data_t *writehandlers;	/* write handlers */
-	struct data_accessors_t *accessors;		/* pointers to the data access handlers */
-};
-
-// 094 end
 
 /***************************************************************************
 
@@ -954,7 +859,6 @@ extern UINT8 *			cpu_bankbase[];		/* array of bank bases */
 extern UINT8 *			readmem_lookup;		/* pointer to the readmem lookup table */
 extern offs_t			mem_amask;			/* memory address mask */
 extern struct ExtMemory	ext_memory[];		/* externally-allocated memory */
-extern struct address_map_t *construct_map_0(struct address_map_t *map);
 
 
 
@@ -1039,116 +943,6 @@ do {																					\
 		}																				\
 	}																					\
 } while (0)
-
-// 094
-/***************************************************************************
-
-	Address map lookup constants
-
-	These apply to values in the internal lookup table.
-
-***************************************************************************/
-
-/* ----- address spaces ----- */
-#define ADDRESS_SPACES			3						/* maximum number of address spaces */
-#define ADDRESS_SPACE_PROGRAM	0						/* program address space */
-#define ADDRESS_SPACE_DATA		1						/* data address space */
-#define ADDRESS_SPACE_IO		2						/* I/O address space */
-
-/***************************************************************************
-
-	Function prototypes for core memory functions
-
-***************************************************************************/
-/* ----- address map functions ----- */
-const struct address_map_t *memory_get_map(int cpunum, int spacenum);
-
-
-/***************************************************************************
-
-	Address map array constructors
-
-***************************************************************************/
-
-/* ----- a typedef for pointers to these functions ----- */
-typedef struct address_map_t *(*construct_map_t)(struct address_map_t *map);
-
-/* use this to declare external references to a machine driver */
-#define ADDRESS_MAP_EXTERN(_name)										\
-struct address_map_t *construct_map_##_name(struct address_map_t *map)	\
-
-/* ----- macros for starting, ending, and setting map flags ----- */
-#define ADDRESS_MAP_START(_name,_space,_bits)							\
-struct address_map_t *construct_map_##_name(struct address_map_t *map)	\
-{																		\
-	typedef read##_bits##_handler _rh_t;								\
-	typedef write##_bits##_handler _wh_t;								\
-	_rh_t read;															\
-	_wh_t write;														\
-	data##_bits##_t **base;												\
-																		\
-	(void)read; (void)write; (void)base;								\
-	map->flags = AM_FLAGS_EXTENDED;										\
-	map->start = AMEF_DBITS(_bits) | AMEF_SPACE(_space);				\
-
-#define ADDRESS_MAP_FLAGS(_flags)										\
-	map++;																\
-	map->flags = AM_FLAGS_EXTENDED;										\
-	map->start = (_flags);												\
-
-#define ADDRESS_MAP_END													\
-	map++;																\
-	map->flags = AM_FLAGS_END;											\
-	return map;															\
-}																		\
-
-/* ----- each map entry begins with one of these ----- */
-#define AM_RANGE(_start,_end)											\
-	map++;																\
-	map->flags = 0;														\
-	map->start = (_start);												\
-	map->end = (_end);													\
-
-#define AM_SPACE(_match,_mask)											\
-	map++;																\
-	map->flags = AM_FLAGS_MATCH_MASK;									\
-	map->start = (_match);												\
-	map->end = (_mask);													\
-
-/* ----- these are optional entries after each map entry ----- */
-#define AM_MASK(_mask)													\
-	map->mask = (_mask);												\
-
-#define AM_MIRROR(_mirror)												\
-	map->mirror = (_mirror);											\
-
-#define AM_READ(_handler)												\
-	map->read.handler = (genf *)(read = _handler);						\
-
-#define AM_WRITE(_handler)												\
-	map->write.handler = (genf *)(write = _handler);					\
-
-#define AM_REGION(_region, _offs)										\
-	map->memory = memory_region(_region) + _offs;						\
-
-#define AM_SHARE(_index)												\
-	map->share = _index;												\
-
-#define AM_BASE(_base)													\
-	map->base = (void **)(base = _base);								\
-
-#define AM_SIZE(_size)													\
-	map->size = _size;													\
-
-/* ----- common shortcuts ----- */
-#define AM_READWRITE(_read,_write)			AM_READ(_read) AM_WRITE(_write)
-#define AM_ROM								AM_READ((_rh_t)STATIC_ROM)
-#define AM_RAM								AM_READWRITE((_rh_t)STATIC_RAM, (_wh_t)STATIC_RAM)
-#define AM_ROMBANK(_bank)					AM_READ((_rh_t)(STATIC_BANK1 + (_bank) - 1))
-#define AM_RAMBANK(_bank)					AM_READWRITE((_rh_t)(STATIC_BANK1 + (_bank) - 1), (_wh_t)(STATIC_BANK1 + (_bank) - 1))
-#define AM_NOP								AM_READWRITE((_rh_t)STATIC_NOP, (_wh_t)STATIC_NOP)
-#define AM_READNOP							AM_READ((_rh_t)STATIC_NOP)
-#define AM_WRITENOP							AM_WRITE((_wh_t)STATIC_NOP)
 
 
 

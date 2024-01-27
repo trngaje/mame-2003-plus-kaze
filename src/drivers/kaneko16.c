@@ -3409,13 +3409,12 @@ READ16_HANDLER( gtmr_wheel_r )
 		return	readinputport(5);				/* 270РWheel*/
 }
 
-static int bank0;
+
 WRITE16_HANDLER( gtmr_oki_0_bank_w )
 {
 	if (ACCESSING_LSB)
 	{
-		OKIM6295_set_bank_base(0, 0x10000 * (data & 0xF) );
-		bank0 = (data & 0xF);
+		OKIM6295_set_bank_base(0, 0x40000 * (data & 0xF) );
 /*		log_cb(RETRO_LOG_DEBUG, LOGPRE "CPU #0 PC %06X : OKI0 bank %08X\n",activecpu_get_pc(),data);*/
 	}
 }
@@ -3429,41 +3428,12 @@ WRITE16_HANDLER( gtmr_oki_1_bank_w )
 	}
 }
 
-/*
-	If you look at the samples ROM for the OKI chip #0, you'll see
-	it's divided into 16 chunks, each chunk starting with the header
-	holding the samples	addresses. But, except for chunk 0, the first
-	$100 bytes ($20 samples) of each chunk are empty, and despite that,
-	samples in the range $0-1f are played. So, whenever a samples in
-	this range is requested, we use the address and sample from chunk 0,
-	otherwise we use those from the selected bank. By using this scheme
-	the sound improves, but I wouldn't bet it's correct..
-*/
 
 WRITE16_HANDLER( gtmr_oki_0_data_w )
 {
-	static int pend = 0;
 
 	if (ACCESSING_LSB)
 	{
-
-		if (pend)	pend = 0;
-		else
-		{
-			if (data & 0x80)
-			{
-				int samp = data &0x7f;
-
-				pend = 1;
-				if (samp < 0x20)
-				{
-					OKIM6295_set_bank_base(0, 0);
-/*					log_cb(RETRO_LOG_DEBUG, LOGPRE "Setting OKI0 bank to zero\n");*/
-				}
-				else
-					OKIM6295_set_bank_base(0, 0x10000 * bank0 );
-			}
-		}
 
 		OKIM6295_data_0_w(0,data);
 /*		log_cb(RETRO_LOG_DEBUG, LOGPRE "CPU #0 PC %06X : OKI0 <- %08X\n",activecpu_get_pc(),data);*/
@@ -5361,6 +5331,14 @@ static struct OKIM6295interface okim6295_intf_2x12kHz =
 	2,
 	{ 12000, 12000 },
 	{ REGION_SOUND1, REGION_SOUND2 },
+	{ 50, 50 }
+};
+
+static struct OKIM6295interface brapboys_okim6295_intf_2x12kHz =
+{
+	2,
+    { 11999, 11999 },
+	{ REGION_SOUND1, REGION_SOUND2 },
 	{ 100, 100 }
 };
 
@@ -5873,7 +5851,7 @@ static MACHINE_DRIVER_START( brapboys )
 	MDRV_VIDEO_UPDATE(kaneko16)
 
 	/* sound hardware */
-	MDRV_SOUND_ADD(OKIM6295, okim6295_intf_2x12kHz)
+	MDRV_SOUND_ADD(OKIM6295, brapboys_okim6295_intf_2x12kHz)
 MACHINE_DRIVER_END
 
 /***************************************************************************
@@ -6412,7 +6390,7 @@ ROM_START( gtmre )
 	ROM_REGION( 0x200000, REGION_GFX3, ROMREGION_DISPOSE )	/* Tiles (scrambled) */
 	ROM_LOAD( "gmmu52.bin",  0x000000, 0x200000, CRC(b15f6b7f) SHA1(5e84919d788add53fc87f4d85f437df413b1dbc5) )
 
-	ROM_REGION( 0x100000, REGION_SOUND1, 0 )	/* Samples */
+	ROM_REGION( 0x400000, REGION_SOUND1, 0 )	/* Samples */
 	ROM_LOAD( "gmmu23.bin",  0x000000, 0x100000, CRC(b9cbfbee) SHA1(051d48a68477ef9c29bd5cc0bb7955d513a0ab94) )	/* 16 x $10000*/
 
 	ROM_REGION( 0x100000, REGION_SOUND2, 0 )	/* Samples */
@@ -6449,7 +6427,7 @@ ROM_START( gtmrusa )
 	ROM_REGION( 0x200000, REGION_GFX3, ROMREGION_DISPOSE )	/* Tiles (scrambled) */
 	ROM_LOAD( "gmmu52.bin",  0x000000, 0x200000, CRC(b15f6b7f) SHA1(5e84919d788add53fc87f4d85f437df413b1dbc5) )
 
-	ROM_REGION( 0x100000, REGION_SOUND1, 0 )	/* Samples */
+	ROM_REGION( 0x400000, REGION_SOUND1, 0 )	/* Samples */
 	ROM_LOAD( "gmmu23.bin",  0x000000, 0x100000, CRC(b9cbfbee) SHA1(051d48a68477ef9c29bd5cc0bb7955d513a0ab94) )	/* 16 x $10000*/
 
 	ROM_REGION( 0x100000, REGION_SOUND2, 0 )	/* Samples */
@@ -7153,28 +7131,28 @@ ROM_START( wingforc )
 	ROM_COPY( REGION_USER1, 0x000000, 0x0e0000, 0x020000)
 ROM_END
 
-ROM_START( packbang )
+ROM_START( packbang ) /* Final/retail version */
 	ROM_REGION( 0x040000, REGION_CPU1, 0 )            /* 68000 Code */
-	ROM_LOAD16_BYTE( "bbp0x3.u23", 0x000000, 0x020000, CRC(105e978a) SHA1(d2aa72a25b70726ebe4b16bfe16da149bb37cd85) ) /* hand written checksum on label - 527B */
-	ROM_LOAD16_BYTE( "bbp1x3.u39", 0x000001, 0x020000, CRC(465d36f5) SHA1(d3bc9e5d444e086652d2bc562d9adfb8a1fd0d2d) ) /* hand written checksum on label - C5C8 */
+	ROM_LOAD16_BYTE( "bbp0x3_u23.u23", 0x000000, 0x020000, CRC(8f879c9d) SHA1(07c793f486f2c00624ee5b4d982de42358854ac9) ) /* labeled BBP0X3/U23 */
+	ROM_LOAD16_BYTE( "bbp1x3_u39.u39", 0x000001, 0x020000, CRC(3a90ad84) SHA1(b25d2de8d6ee15822a5f4ca445956cfce3d30cc4) ) /* labeled BBP1X3/U39 */
 
 	ROM_REGION( 0x120000, REGION_GFX1, ROMREGION_DISPOSE )  /* Sprites */
-	ROM_LOAD( "bb.u84",  0x000000, 0x080000, CRC(97837aaa) SHA1(303780621afea01f9e4d1386229c7421307562ec) )
-	ROM_LOAD( "pb_spr_ext_9_20_ver.u83", 0x080000, 0x040000, CRC(666a1217) SHA1(0d7b08d63b229d70b7e9e77a36516a695533c4cb) ) /* hand written label plus checksum BA63 */
+	ROM_LOAD( "bb-u84-007__w22.u84", 0x000000, 0x080000, CRC(97837aaa) SHA1(303780621afea01f9e4d1386229c7421307562ec) ) /* mask ROM */
+	ROM_LOAD( "bbs0x1_u83.u83",      0x080000, 0x040000, CRC(3d95b1e5) SHA1(3bc54b4af4a059feb88779d786798dd06386cc48) ) /* labeled BBS0X1/U83 */
 
 	ROM_REGION( 0x080000, REGION_GFX2, ROMREGION_DISPOSE )   /* Tiles (Scrambled) */
-	ROM_LOAD( "bbbox1.u77",  0x000000, 0x080000, CRC(b2ffd081) SHA1(e4b8b60ed0c5f2e0709477cc840864e1c0a351ea) ) /* 1ST AND 2ND HALF IDENTICAL*/
+	ROM_LOAD( "bbb0x1_u77.u77",  0x000000, 0x080000, CRC(b2ffd081) SHA1(e4b8b60ed0c5f2e0709477cc840864e1c0a351ea) ) /* labeled BBB0X1/U77 - 1ST AND 2ND HALF IDENTICAL */
 
 	ROM_REGION( 0x400000, REGION_GFX3, ROMREGION_DISPOSE )   /* High Color Background */
-	ROM_LOAD16_BYTE( "bb.u73",  0x000000, 0x080000, CRC(896d88cb) SHA1(7546e64149d8d8e3425d9112a7a63b2d2e59b8bb) )
-	ROM_LOAD16_BYTE( "bb.u65",  0x000001, 0x080000, CRC(fe17c5b5) SHA1(daea65bd87d2137526250d521f36f122f733fd9d) ) /* FIXED BITS (xxxxxxx0)*/
-	ROM_LOAD16_BYTE( "bb.u74",  0x100000, 0x080000, CRC(b01e77b9) SHA1(73f3adaf6468f4e9c54bff63268af1765cfc5f67) )
-	ROM_LOAD16_BYTE( "bb.u66",  0x100001, 0x080000, CRC(caec5098) SHA1(9966cd643abe498f84a9e01bc32003f4654584de) ) /* FIXED BITS (xxxxxxx0)*/
-	ROM_LOAD16_BYTE( "bb.u75",  0x200000, 0x080000, CRC(5cb4669f) SHA1(ab061f5b34435dca46f710ea8118c919a3a9f87c) )
-	ROM_LOAD16_BYTE( "bb.u67",  0x200001, 0x080000, CRC(ce5c9417) SHA1(30aca496d1f4218b44a32b3630e58889f0c54564) ) /* FIXED BITS (xxxxxxx0)*/
+	ROM_LOAD16_BYTE( "bb-u73-004__w19.u73",  0x000000, 0x080000, CRC(896d88cb) SHA1(7546e64149d8d8e3425d9112a7a63b2d2e59b8bb) ) /* These are all mask ROMs */
+	ROM_LOAD16_BYTE( "bb-u65-001__w16.u65",  0x000001, 0x080000, CRC(fe17c5b5) SHA1(daea65bd87d2137526250d521f36f122f733fd9d) ) /* FIXED BITS (xxxxxxx0) */
+	ROM_LOAD16_BYTE( "bb-u74-005__w20.u74",  0x100000, 0x080000, CRC(b01e77b9) SHA1(73f3adaf6468f4e9c54bff63268af1765cfc5f67) )
+	ROM_LOAD16_BYTE( "bb-u66-002__w17.u66",  0x100001, 0x080000, CRC(caec5098) SHA1(9966cd643abe498f84a9e01bc32003f4654584de) ) /* FIXED BITS (xxxxxxx0) */
+	ROM_LOAD16_BYTE( "bb-u75-006__w21.u75",  0x200000, 0x080000, CRC(5cb4669f) SHA1(ab061f5b34435dca46f710ea8118c919a3a9f87c) )
+	ROM_LOAD16_BYTE( "bb-u67-003__w18.u67",  0x200001, 0x080000, CRC(ce5c9417) SHA1(30aca496d1f4218b44a32b3630e58889f0c54564) ) /* FIXED BITS (xxxxxxx0) */
 
 	ROM_REGION( 0x040000, REGION_SOUND1, 0 )    /* Samples */
-	ROM_LOAD( "bw000.u46",  0x000000, 0x040000, CRC(d8fe869d) SHA1(75e9044c4164ca6db9519fcff8eca6c8a2d8d5d1) )
+	ROM_LOAD( "bw_u46.u46",  0x000000, 0x040000, CRC(d8fe869d) SHA1(75e9044c4164ca6db9519fcff8eca6c8a2d8d5d1) ) /* labeled BW    /U46 */
 ROM_END
 
 
@@ -7248,7 +7226,12 @@ static DRIVER_INIT( bloodwar )
 	decrypt_toybox_rom();
 }
 
-
+static DRIVER_INIT( gtmr )
+{
+	kaneko16_unscramble_tiles(REGION_GFX2);
+	kaneko16_unscramble_tiles(REGION_GFX3);
+	kaneko16_expand_sample_banks(REGION_SOUND1);
+}
 
 static void expand_shogwarr_samples(void)
 {
@@ -7343,10 +7326,10 @@ GAME( 1991, mgcrystl, 0,        mgcrystl, mgcrystl, kaneko16,   ROT0,  "Kaneko",
 GAME( 1991, mgcrystj, mgcrystl, mgcrystl, mgcrystl, kaneko16,   ROT0,  "Kaneko", "Magical Crystals (Japan)" )
 GAME( 1992, blazeon,  0,        blazeon,  blazeon,  kaneko16,   ROT0,  "Atlus",  "Blaze On (Japan)" )
 GAMEX(1992, sandscrp, 0,        sandscrp, sandscrp, 0,          ROT90, "Face",   "Sand Scorpion",  GAME_IMPERFECT_SOUND )
-GAME( 1994, gtmr,     0,        gtmr,     gtmr,     kaneko16,   ROT0,  "Kaneko", "Great 1000 Miles Rally" )
-GAME( 1994, gtmre,    gtmr,     gtmr,     gtmr,     kaneko16,   ROT0,  "Kaneko", "Great 1000 Miles Rally (Evolution Model)" )
-GAME( 1994, gtmrusa,  gtmr,     gtmr,     gtmr,     kaneko16,   ROT0,  "Kaneko", "Great 1000 Miles Rally (USA)" )
-GAME( 1995, gtmr2,    0,        gtmr2,    gtmr2,    kaneko16,   ROT0,  "Kaneko", "Mille Miglia 2 - Great 1000 Miles Rally" )
+GAME( 1994, gtmr,     0,        gtmr,     gtmr,     gtmr,       ROT0,  "Kaneko", "Great 1000 Miles Rally" )
+GAME( 1994, gtmre,    gtmr,     gtmr,     gtmr,     gtmr,       ROT0,  "Kaneko", "Great 1000 Miles Rally (Evolution Model)" )
+GAME( 1994, gtmrusa,  gtmr,     gtmr,     gtmr,     gtmr,       ROT0,  "Kaneko", "Great 1000 Miles Rally (USA)" )
+GAME( 1995, gtmr2,    0,        gtmr2,    gtmr2,    gtmr,       ROT0,  "Kaneko", "Mille Miglia 2 - Great 1000 Miles Rally" )
 
 /* New-working games */
 
@@ -7357,5 +7340,5 @@ GAMEX(1992, brapboys, 0,        brapboys, brapboys, brapboys,   ROT0,  "Kaneko",
 GAMEX(1992, brapboysj,brapboys, brapboys, brapboys, brapboys,   ROT0,  "Kaneko", "B.Rap Boys Special (Japan)", GAME_IMPERFECT_GRAPHICS )
 GAMEX(1994, bloodwar, 0,        bloodwar, bloodwar, bloodwar,   ROT0,  "Kaneko", "Blood Warrior", GAME_IMPERFECT_GRAPHICS )
 GAMEX(1994, bonkadv,  0,        bonkadv , bonkadv,  bloodwar,   ROT0,  "Kaneko", "Bonk's Adventure", GAME_IMPERFECT_GRAPHICS )
-GAMEX(1994, packbang, 0,        packbang, packbang, berlwall,   ROT90, "Kaneko", "Pack'n Bang Bang (prototype)", GAME_IMPERFECT_GRAPHICS ) /* priorities between stages?*/
+GAMEX(1994, packbang, 0,        packbang, packbang, berlwall,   ROT90, "Kaneko", "Pack'n Bang Bang", GAME_IMPERFECT_GRAPHICS ) /* priorities between stages?*/
 GAME( 1993, wingforc, 0,        wingforc, wingforc, kaneko16,   ROT270,"Atlus",  "Wing Force (Japan, prototype)" )

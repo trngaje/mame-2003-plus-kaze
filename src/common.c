@@ -13,7 +13,7 @@
 #include <string/stdstring.h>
 #include "libretro-deps/libFLAC/include/FLAC/all.h"
 #include "log.h"
-//#define LOG_LOAD
+/*#define LOG_LOAD */
 
 
 char *chd_error_text[] =
@@ -45,9 +45,9 @@ char *chd_error_text[] =
 	Constants
 ***************************************************************************/
 
-// VERY IMPORTANT: osd_alloc_bitmap must allocate also a "safety area" 16 pixels wide all
-// around the bitmap. This is required because, for performance reasons, some graphic
-// routines don't clip at boundaries of the bitmap.
+/* VERY IMPORTANT: osd_alloc_bitmap must allocate also a "safety area" 16 pixels wide all */
+/* around the bitmap. This is required because, for performance reasons, some graphic */
+/* routines don't clip at boundaries of the bitmap. */
 #define BITMAP_SAFETY			16
 
 #define MAX_MALLOCS				4096
@@ -237,13 +237,13 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		return NULL;
 
 	if (memcmp(&buf[0], "RIFF", 4) == 0)
-		f_type = 1; // WAV
+		f_type = 1; /* WAV */
 	else if (memcmp(&buf[0], "fLaC", 4) == 0)
-		f_type = 2; // FLAC
+		f_type = 2; /* FLAC */
 	else
-		return NULL; // No idea what file this is.
+		return NULL; /* No idea what file this is. */
 
-	// Load WAV file.
+	/* Load WAV file. */
 	if(f_type == 1) {
 		/* get the total size */
 		offset += mame_fread(f, &filesize, 4);
@@ -316,7 +316,7 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 				return NULL;
 		}
 
-		// For small samples, lets force them to pre load into memory.
+		/* For small samples, lets force them to pre load into memory. */
 		if(length <= GAME_SAMPLE_LARGE)
 			b_data = 1;
 
@@ -339,18 +339,18 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		result->resolution = bits;
 
 		if(b_data == 1) {
-			// read the data in
+			/* read the data in */
 			if (bits == 8)
 			{
 				mame_fread(f, result->data, length);
 
-				// convert 8-bit data to signed samples
+				/* convert 8-bit data to signed samples */
 				for (temp32 = 0; temp32 < length; temp32++)
 					result->data[temp32] ^= 0x80;
 			}
 			else
 			{
-				// 16-bit data is fine as-is
+				/* 16-bit data is fine as-is */
 				mame_fread_lsbfirst(f, result->data, length);
 			}
 
@@ -361,7 +361,7 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 
 		return result;
 	}
-	else if(f_type == 2) { // Load FLAC file.
+	else if(f_type == 2) { /* Load FLAC file. */
 		int f_length;
     flac_reader flac_file;
     FLAC__StreamDecoder *decoder;
@@ -370,7 +370,7 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		f_length = mame_ftell(f);
 		mame_fseek(f, 0, 0);
 
-		// For small samples, lets force them to pre load into memory.
+		/* For small samples, lets force them to pre load into memory. */
 		if (f_length <= GAME_SAMPLE_LARGE)
 			b_data = 1;
 
@@ -378,10 +378,10 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		flac_file.position = 0;
 		flac_file.decoded_size = 0;
 
-		// Allocate space for the data.
+		/* Allocate space for the data. */
 		flac_file.rawdata = malloc(f_length);
 
-		// Read the sample data in.
+		/* Read the sample data in. */
 		mame_fread(f, flac_file.rawdata, f_length);
 		decoder = FLAC__stream_decoder_new();
 
@@ -391,12 +391,12 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		}
 
 		if(FLAC__stream_decoder_init_stream(decoder, my_read_callback,
-			NULL, //my_seek_callback,      // or NULL
-			NULL, //my_tell_callback,      // or NULL
-			NULL, //my_length_callback,    // or NULL
-			NULL, //my_eof_callback,       // or NULL
+			NULL, /*my_seek_callback,      // or NULL */
+			NULL, /*my_tell_callback,      // or NULL */
+			NULL, /*my_length_callback,    // or NULL */
+			NULL, /*my_eof_callback,       // or NULL */
 			my_write_callback,
-			my_metadata_callback, //my_metadata_callback,  // or NULL
+			my_metadata_callback, /*my_metadata_callback,  // or NULL */
 			my_error_callback,
 			(void*)&flac_file) != FLAC__STREAM_DECODER_INIT_STATUS_OK)
 				return NULL;
@@ -407,14 +407,14 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 			return NULL;
 		}
 
-		// only Mono supported
+		/* only Mono supported */
 		if (flac_file.channels != 1) {
 			free(flac_file.rawdata);
 			FLAC__stream_decoder_delete(decoder);
 			return NULL;
 		}
 
-		// only support 16 bit.
+		/* only support 16 bit. */
 		if (flac_file.bits_per_sample != 16) {
 			free(flac_file.rawdata);
 			FLAC__stream_decoder_delete(decoder);
@@ -472,7 +472,7 @@ void readsample(struct GameSample *SampleInfo, int channel, struct GameSamples *
 	mame_file *f;
 	struct GameSample *SampleFile;
 
-	// Try opening the file.
+	/* Try opening the file. */
 	f = mame_fopen(SampleInfo->gamename,SampleInfo->filename,SampleInfo->filetype,0);
 
 	if (f != 0) {
@@ -483,10 +483,10 @@ void readsample(struct GameSample *SampleInfo, int channel, struct GameSamples *
 		strcpy(gamename, SampleInfo->gamename);
 		strcpy(filename, SampleInfo->filename);
 
-		// Free up some memory.
+		/* Free up some memory. */
 		free(SamplesData->sample[channel]);
 
-		// Reload or load a sample into memory.
+		/* Reload or load a sample into memory. */
 		SamplesData->sample[channel] = read_wav_sample(f, gamename, filename, filetype, load);
 
 		mame_fclose(f);
@@ -535,7 +535,7 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 
 		if (samplenames[i+skipfirst][0])
 		{
-			// Try opening FLAC samples first.
+			/* Try opening FLAC samples first. */
 			if ((f = mame_fopen(basename,samplenames[i+skipfirst],FILETYPE_SAMPLE_FLAC,0)) == 0)
 			{
 				if (skipfirst) {
@@ -543,7 +543,7 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 					f_skip = 1;
 				}
 
-				// Fall back to WAV if it exists.
+				/* Fall back to WAV if it exists. */
 				if (!f)
 				{
 					f_type = 1;
@@ -557,17 +557,17 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 				}
 			}
 
-			// Get sample info. Small sample files will pre load into memory at this point.
+			/* Get sample info. Small sample files will pre load into memory at this point. */
 			if (f != 0)
 			{
-				// Open FLAC.
+				/* Open FLAC. */
 				if(f_type == 0) {
 					if (f_skip == 1)
 						samples->sample[i] = read_wav_sample(f, samplenames[0]+1, samplenames[i+skipfirst], FILETYPE_SAMPLE_FLAC, 0);
 					else
 						samples->sample[i] = read_wav_sample(f, basename, samplenames[i+skipfirst], FILETYPE_SAMPLE_FLAC, 0);
 				}
-				else { // Open WAV.
+				else { /* Open WAV. */
 					if (f_skip == 1)
 						samples->sample[i] = read_wav_sample(f, samplenames[0]+1, samplenames[i+skipfirst], FILETYPE_SAMPLE, 0);
 					else
@@ -1153,46 +1153,26 @@ const struct RomModule *rom_next_chunk(const struct RomModule *romp)
 
 int determine_bios_rom(const struct SystemBios *bios)
 {
-	const struct SystemBios *firstbios = bios;
-
 	/* set to default */
 	int bios_no = 0;
 
 	/* Not system_bios_0 and options.bios is set  */
 	if(bios && (options.bios != NULL))
 	{
-
-    /* Allow '-bios n' to still be used */
-		/* no actually in mame2003 we don't use the old numerical bios index
-       we use the core option & option.bios string */
-    /*
-    while(!BIOSENTRY_ISEND(bios))
-		{
-			char bios_number[3];
-
-			if(!strcmp(bios_number, options.bios))
-				bios_no = bios->value;
-
-			bios++;
-		}
-
-		bios = firstbios;
-    */
-
 		/* Test for bios short names */
 		while(!BIOSENTRY_ISEND(bios))
 		{
 			if(strcmp(bios->_name, options.bios) == 0)
-      {
-        log_cb(RETRO_LOG_INFO, LOGPRE "Using BIOS: %s\n", options.bios);
+			{
+				log_cb(RETRO_LOG_INFO, LOGPRE "Using BIOS: %s\n", options.bios);
 				bios_no = bios->value;
-        break;
-      }
+				break;
+			}
 			bios++;
 		}
-    if(string_is_empty(options.bios))
-      log_cb(RETRO_LOG_INFO, LOGPRE "No matching BIOS found. Using default system BIOS.");
 
+		if(string_is_empty(options.bios))
+			log_cb(RETRO_LOG_INFO, LOGPRE "No matching BIOS found. Using default system BIOS.");
 	}
 
 	return bios_no;
@@ -1704,6 +1684,7 @@ static int copy_rom_data(struct rom_load_data *romdata, const struct RomModule *
 static int process_rom_entries(struct rom_load_data *romdata, const struct RomModule *romp)
 {
 	UINT32 lastflags = 0;
+	const struct RomModule *fallback_romp = romp;
 
 	/* loop until we hit the end of this region */
 	while (!ROMENTRY_ISREGIONEND(romp))
@@ -1747,7 +1728,16 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 				/* open the file */
 				log_cb(RETRO_LOG_INFO, LOGPRE "Opening ROM file: %s\n", ROM_GETNAME(romp));
 				if (!open_rom_file(romdata, romp))
-					handle_missing_file(romdata, romp);
+				{
+					if (ROM_GETBIOSFLAGS(romp) == (system_bios+1))
+					{
+						log_cb(RETRO_LOG_WARN, LOGPRE "%s NOT FOUND! Attempt fallback to default bios.\n", ROM_GETNAME(romp));
+						if (!open_rom_file(romdata, &fallback_romp[0])) /* try default bios instead */
+							handle_missing_file(romdata, romp);
+					}
+					else
+						handle_missing_file(romdata, romp);
+				}
 
 				/* loop until we run out of reloads */
 				do
@@ -1777,7 +1767,7 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 					if (baserom)
 					{
 						log_cb(RETRO_LOG_DEBUG, LOGPRE "Verifying length (%X) and checksums\n", explength);
-            verify_length_and_hash(romdata, ROM_GETNAME(baserom), explength, ROM_GETHASHDATA(baserom));
+						verify_length_and_hash(romdata, ROM_GETNAME(baserom), explength, ROM_GETHASHDATA(baserom));
 						log_cb(RETRO_LOG_DEBUG, LOGPRE "Length and checksum verify finished\n");
 					}
 

@@ -112,56 +112,6 @@ struct memport_data
 	struct table_data	write;				/* memory write lookup table */
 };
 
-// 094
-
-union rwhandlers_t
-{
-	genf *					generic;				/* generic handler void */
-	union read_handlers_t	read;					/* read handlers */
-	union write_handlers_t	write;					/* write handlers */
-};
-
-
-struct handler_data_t
-{
-	union rwhandlers_t		handler;				/* function pointer for handler */
-	offs_t					offset;					/* base offset for handler */
-	offs_t					top;					/* maximum offset for handler */
-	offs_t					mask;					/* mask against the final address */
-};
-
-struct subtable_data_t
-{
-	UINT8					checksum_valid;			/* is the checksum valid */
-	UINT32					checksum;				/* checksum over all the bytes */
-	UINT32					usecount;				/* number of times this has been used */
-};
-
-struct table_data_t
-{
-	UINT8 *					table;					/* pointer to base of table */
-	UINT8 					subtable_alloc;			/* number of subtables allocated */
-	struct subtable_data_t	subtable[SUBTABLE_COUNT]; /* info about each subtable */
-	struct handler_data_t	handlers[ENTRY_COUNT];	/* array of user-installed handlers */
-};
-
-struct addrspace_data_t
-{
-	UINT8					cpunum;					/* CPU index */
-	UINT8					spacenum;				/* address space index */
-	INT8					ashift;					/* address shift */
-	UINT8					abits;					/* address bits */
-	UINT8 					dbits;					/* data bits */
-	offs_t					rawmask;				/* raw address mask, before adjusting to bytes */
-	offs_t					mask;					/* address mask */
-	data64_t				unmap;					/* unmapped value */
-	struct table_data_t		read;					/* memory read lookup table */
-	struct table_data_t		write;					/* memory write lookup table */
-	struct data_accessors_t *accessors;				/* pointer to the memory accessors */
-	struct address_map_t *	map;					/* original memory map */
-	struct address_map_t *	adjmap;					/* adjusted memory map */
-};
-
 struct cpu_data
 {
 	void *				rambase;			/* RAM base pointer */
@@ -176,9 +126,6 @@ struct cpu_data
 
 	struct memport_data	mem;				/* memory tables */
 	struct memport_data	port;				/* port tables */
-
-	UINT8					spacemask;				/* mask of which address spaces are used */
-	//struct addrspace_data_t space[ADDRESS_SPACES];	/* info about each address space */	
 };
 
 struct memory_address_table
@@ -186,7 +133,6 @@ struct memory_address_table
 	int 				bits;				/* address bits */
 	read8_handler		handler;			/* handler associated with that */
 };
-
 
 
 
@@ -479,17 +425,6 @@ void memory_set_bankhandler_w(int bank, offs_t offset, mem_write_handler handler
 		handler = wmemhandler8s[(FPTR)handler];
 	wmemhandler8[bank].handler = (void *)handler;
 }
-
-// 094
-/*-------------------------------------------------
-	memory_get_map - return a pointer to a CPU's
-	memory map
--------------------------------------------------*/
-
-//const struct address_map_t *memory_get_map(int cpunum, int spacenum)
-//{
-//	return cpudata[cpunum].space[spacenum].map;
-//}
 
 
 /*-------------------------------------------------
@@ -788,16 +723,6 @@ void install_port_write32_handler(int cpunum, offs_t start, offs_t end, port_wri
 #endif
 }
 
-
-/*-------------------------------------------------
-	construct_map_0 - NULL memory map
--------------------------------------------------*/
-
-struct address_map_t *construct_map_0(struct address_map_t *map)
-{
-	map->flags = AM_FLAGS_END;
-	return map;
-}
 
 /*-------------------------------------------------
 	fatalerror - display an error message and

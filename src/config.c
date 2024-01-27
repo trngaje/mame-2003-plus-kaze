@@ -8,7 +8,7 @@
 #include "mame.h"
 #include "common.h"
 
-#define USE_VOLUME_AUTO_ADJUST
+
 
 /***************************************************************************
 	CONSTANTS
@@ -475,10 +475,6 @@ done:
 
 int config_read_mixer_config(config_file *cfg, struct mixer_config *mixercfg)
 {
-#ifdef USE_VOLUME_AUTO_ADJUST
-	UINT32 magic = 0;
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
 	if (cfg->is_write)
 		return CONFIG_ERROR_BADMODE;
 	if (cfg->position != POSITION_AFTER_COINS)
@@ -488,18 +484,10 @@ int config_read_mixer_config(config_file *cfg, struct mixer_config *mixercfg)
 	memset(mixercfg->mixing_levels, 0xff, sizeof(mixercfg->mixing_levels));
 	mame_fread(cfg->file, mixercfg->default_levels, MIXER_MAX_CHANNELS);
 	mame_fread(cfg->file, mixercfg->mixing_levels, MIXER_MAX_CHANNELS);
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-	mame_fread(cfg->file, &magic, sizeof magic);
-	if (magic == VOLUME_MULTIPLIER_MAGIC)
-		mame_fread(cfg->file, &mixercfg->volume_multiplier, sizeof mixercfg->volume_multiplier);
-	else
-		mixercfg->volume_multiplier = DEFAULT_VOLUME_MULTIPLIER;
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
 	cfg->position = POSITION_AFTER_MIXER;
 	return CONFIG_ERROR_SUCCESS;
 }
+
 
 
 /***************************************************************************
@@ -632,10 +620,6 @@ int config_write_coin_and_ticket_counters(config_file *cfg, const unsigned int *
 
 int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixercfg)
 {
-#ifdef USE_VOLUME_AUTO_ADJUST
-	UINT32 magic = VOLUME_MULTIPLIER_MAGIC;
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
 	if (!cfg->is_write)
 		return CONFIG_ERROR_BADMODE;
 	if (cfg->position != POSITION_AFTER_COINS)
@@ -643,12 +627,6 @@ int config_write_mixer_config(config_file *cfg, const struct mixer_config *mixer
 
 	mame_fwrite(cfg->file, mixercfg->default_levels, MIXER_MAX_CHANNELS);
 	mame_fwrite(cfg->file, mixercfg->mixing_levels, MIXER_MAX_CHANNELS);
-
-#ifdef USE_VOLUME_AUTO_ADJUST
-	mame_fwrite(cfg->file, &magic, sizeof magic);
-	mame_fwrite(cfg->file, &mixercfg->volume_multiplier, sizeof mixercfg->volume_multiplier);
-#endif /* USE_VOLUME_AUTO_ADJUST */
-
 	cfg->position = POSITION_AFTER_MIXER;
 	return CONFIG_ERROR_SUCCESS;
 }

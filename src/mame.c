@@ -447,7 +447,7 @@ static int run_machine(void)
 					}
 
 				ui_copyright_and_warnings();
-        pause_action = pause_action_start_emulator;
+				pause_action_start_emulator(); /* this needs call before retrorun else serialization can fail on different sizes */
 				return 0;
 			}
 
@@ -568,21 +568,6 @@ static void shutdown_machine(void)
 	/* reset the saved states */
 	state_save_reset();
 }
-
-/*-------------------------------------------------
-    mame_pause - pause or resume the system
--------------------------------------------------*/
-
-
-void mame_pause(int pause)
-{
-	//osd_pause(pause);
-	//osd_sound_enable(!pause);
-	palette_set_global_brightness_adjust(pause ? options.pause_bright : 1.00);
-	schedule_full_refresh();
-}
-
-
 
 /*-------------------------------------------------
 	expand_machine_driver - construct a machine
@@ -835,39 +820,8 @@ static void init_game_options(void)
   Machine->orientation    = ROT0;
   Machine->ui_orientation = options.ui_orientation;
 
-
-// set sample rate here as osd_start_audio_stream the logic must be the same in both some soundcores require setting here as well
-// ie ymf271 will segfault without this.
- if (options.machine_timing)
-  {
-    if ( ( Machine->drv->frames_per_second * 1000 < options.samplerate) || (Machine->drv->frames_per_second < 60) )
-      Machine->sample_rate = Machine->drv->frames_per_second * 1000;
-
-    else Machine->sample_rate = options.samplerate;
-  }
-
-  else
-  {
-    if ( Machine->drv->frames_per_second * 1000 < options.samplerate)
-    {
-      if ( Machine->drv->frames_per_second * 1000 > 44100)
-        Machine->sample_rate = 44100;
-      else if ( Machine->drv->frames_per_second * 1000 > 30000)
-        Machine->sample_rate = 30000;
-      else if ( Machine->drv->frames_per_second * 1000 > 22050)
-        Machine->sample_rate = 22050;
-      else if ( Machine->drv->frames_per_second * 1000 > 11025)
-        Machine->sample_rate = 11025;
-      else if ( Machine->drv->frames_per_second * 1000 > 8000)
-        Machine->sample_rate = 8000;
-      else
-        Machine->sample_rate = Machine->drv->frames_per_second * 1000;
-    }
-
-    else
-      Machine->sample_rate = options.samplerate;
-  }
-
+  Machine->sample_rate = options.samplerate;
+ 
 }
 
 
